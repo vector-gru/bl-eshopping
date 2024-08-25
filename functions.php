@@ -26,5 +26,3 @@
     //Cart object
     $Cart = new Cart($db);
 
-
-    //    print_r($product->getData());

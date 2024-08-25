@@ -2,7 +2,8 @@
 <?php
     global$product;
     global$Cart;
-        $product_shuffle = $product->getData();
+
+    $product_shuffle = $product->getData();
 
 
     $brand = array_map(function ($pro){ return $pro['item_brand']; }, $product_shuffle);
@@ -18,11 +19,7 @@
         }
     }
 
-?>
-
-<?php
-
-//    $in_cart = $Cart->getCartId($product->getData('cart'));
+    $in_cart = $Cart->getCartId($product->getData('cart'));
 
 ?>
 
@@ -43,8 +40,8 @@
         </div>
 
         <div class="grid">
-            <?php array_map(function ($item){?>
-            <div class="grid-item border <?php echo $item['item_brand'] ?? "Brand"; ?>">
+            <?php array_map(function ($item)use($in_cart){?>
+                <div class="grid-item border <?php echo $item['item_brand'] ?? "Brand"; ?>">
                 <div class="item py-2" style="width: 200px;">
                     <div class="product font-rale">
                         <a href="<?php printf('%s?item_id=%s', 'product.php',  $item['item_id']); ?>"><img src="<?php echo $item['item_image'] ?? "./assets/products/13.png";?>" alt="product1" class="img-fluid"></a>
@@ -63,13 +60,13 @@
                             <form method="post">
                                 <input type="hidden" name="item_id" value="<?php echo $item['item_id'] ?? '1'; ?>">
                                 <input type="hidden" name="user_id" value="<?php echo 1; ?>">
-                                <button type="submit" name="special_price_submit" class="btn btn-warning font-size-12">Add to Cart</button>
+<!--                                <button type="submit" name="special_price_submit" class="btn btn-warning font-size-12">Add to Cart</button>-->
                                 <?php
-                                //                                if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
-                                //                                    echo '<button type="submit" disabled class="btn btn-success font-size-12">In the Cart</button>';
-                                //                                }else{
-                                //                                    echo '<button type="submit" name="top_sale_submit" class="btn btn-warning font-size-12">Add to Cart</button>';
-                                //                                }
+                                if (in_array($item['item_id'], $in_cart ?? [])){
+                                    echo '<button type="submit" disabled class="btn btn-success font-size-12">In the Cart</button>';
+                                    }else{
+                                        echo '<button type="submit" name="special_price_submit" class="btn btn-warning font-size-12">Add to Cart</button>';
+                                    }
                                 ?>
                             </form>                        </div>
                     </div>
