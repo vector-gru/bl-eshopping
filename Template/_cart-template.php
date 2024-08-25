@@ -82,6 +82,7 @@
 
                 ?>
                </div>
+
             <!-- subtotal section-->
             <div class="col-sm-3">
                 <div class="sub-total border text-center mt-2">
