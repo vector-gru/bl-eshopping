@@ -1,4 +1,4 @@
-<!-- Shopping cart section  -->
+<!-- Wishlist section  -->
 <?php
 global$product;
 global$Cart;
@@ -87,4 +87,4 @@ global$Cart;
         <!--  !shopping cart items   -->
     </div>
 </section>
-<!-- !Shopping cart section  -->
+<!-- !Wishlist section -->
