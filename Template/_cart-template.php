@@ -8,10 +8,10 @@
          $deletedrecord = $Cart->deleteCart($_POST['item_id']);
      }
 
-     // save for later
-//     if (isset($_POST['wishlist-submit'])){
-//         $Cart->saveForLater($_POST['item_id']);
-//     }
+    // save for later
+     if (isset($_POST['wishlist-submit'])){
+         $Cart->saveForLater($_POST['item_id']);
+     }
  }
 
  ?>
@@ -61,7 +61,10 @@
                                     <button type="submit" name="delete-cart-submit" class="btn font-baloo text-danger px-3 border-right">Delete</button>
                                 </form>
 
-                                <button type="submit" name="wishlist-submit" class="btn font-baloo text-danger">Save for Later</button>
+                                <form method="post">
+                                    <input type="hidden" value="<?php echo $item['item_id'] ?? 0; ?>" name="item_id">
+                                    <button type="submit" name="wishlist-submit" class="btn font-baloo text-danger">Save for Later</button>
+                                </form>
 
                             </div>
                             <!-- !product qty -->
