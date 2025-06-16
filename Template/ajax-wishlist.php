@@ -19,21 +19,21 @@
 
     if(isset($_POST['item_id']) && isset($_POST['user_id'])){
         try {
-            // First check if item is already in cart
-            $cart = $product->getData('cart');
-            $in_cart = false;
-            foreach($cart as $item) {
+            // First check if item is already in wishlist
+            $wishlist = $product->getData('wishlist');
+            $in_wishlist = false;
+            foreach($wishlist as $item) {
                 if($item['item_id'] == $_POST['item_id']) {
-                    $in_cart = true;
+                    $in_wishlist = true;
                     break;
                 }
             }
             
-            if($in_cart) {
-                echo json_encode(['success' => true, 'message' => 'Item already in cart']);
+            if($in_wishlist) {
+                echo json_encode(['success' => true, 'message' => 'Item already in wishlist']);
             } else {
-                $result = $Cart->addToCart($_POST['user_id'], $_POST['item_id']);
-                echo json_encode(['success' => $result, 'message' => $result ? 'Added to cart' : 'Failed to add to cart']);
+                $result = $Cart->saveForLater($_POST['item_id'], 'wishlist', 'cart');
+                echo json_encode(['success' => $result, 'message' => $result ? 'Added to wishlist' : 'Failed to add to wishlist']);
             }
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);

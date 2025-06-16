@@ -4,6 +4,7 @@
     use database\DBController;
     use database\Product;
     use database\Cart;
+    use database\Wishlist;
 
 
     // require MySQL Connection
@@ -15,6 +16,9 @@
     //require Cart Class
     require ('database/Cart.php');
 
+    //require Wishlist Class
+    require ('database/Wishlist.php');
+
     // DBController object
     $db = new DBController();
 
@@ -25,4 +29,7 @@
 
     //Cart object
     $Cart = new Cart($db);
+
+    //Wishlist object
+    $Wishlist = new Wishlist($db);
 

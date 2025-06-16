@@ -1,16 +1,22 @@
- <!--   product  -->
+<!--   product  -->
 
 <?php
-    global$product;
-    global$Cart;
+    global $product;
+    global $Cart;
+    global $Wishlist;
 
     $item_id = $_GET['item_id'] ?? 1;
+    $user_id = 1; // Default user ID for now
     
     // request method post
     if($_SERVER['REQUEST_METHOD'] == "POST"){
         if (isset($_POST['product_submit'])){
             // call method addToCart
             $Cart->addToCart($_POST['user_id'], $_POST['item_id']);
+        }
+        if (isset($_POST['wishlist_submit'])){
+            // call method addToWishlist
+            $Wishlist->addToWishlist($_POST['user_id'], $_POST['item_id']);
         }
     }
 
@@ -26,14 +32,37 @@
                 <img src="<?php echo $item['item_image'] ?? "./assets/products/1.png" ?>" alt="product" class="img-fluid">
                 <div class="form-row pt-4 font-size-16 font-baloo">
                     <div class="col">
-                        <button type="submit" class="btn btn-danger form-control">Proceed to Buy</button>
+                        <a href="cart.php" class="btn btn-danger btn-block">
+                            <i class="fas fa-bolt"></i> Proceed to Buy
+                        </a>
                     </div>
                     <div class="col">
                         <?php
                         if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
-                            echo '<button type="button" disabled class="btn btn-success font-size-16 form-control">In the Cart</button>';
+                            echo '<button type="button" disabled class="btn btn-success btn-block">
+                                    <i class="fas fa-shopping-cart"></i> In Cart
+                                  </button>';
                         }else{
-                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', 1)" class="btn btn-warning font-size-16 form-control">Add to Cart</button>';
+                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$user_id.')" class="btn btn-warning btn-block">
+                                    <i class="fas fa-cart-plus"></i> Add to Cart
+                                  </button>';
+                        }
+                        ?>
+                    </div>
+                    <div class="col">
+                        <?php
+                        if (in_array($item['item_id'], $Wishlist->getWishlistId($product->getData('wishlist')) ?? [])){
+                            echo '<button type="button" disabled class="btn btn-success btn-block">
+                                    <i class="fas fa-heart"></i> In Wishlist
+                                  </button>';
+                        }else{
+                            echo '<form method="post">
+                                    <input type="hidden" name="user_id" value="'.$user_id.'">
+                                    <input type="hidden" name="item_id" value="'.$item['item_id'].'">
+                                    <button type="submit" name="wishlist_submit" class="btn btn-info btn-block">
+                                        <i class="far fa-heart"></i> Add to Wishlist
+                                    </button>
+                                  </form>';
                         }
                         ?>
                     </div>

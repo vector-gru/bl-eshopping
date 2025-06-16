@@ -38,7 +38,7 @@
         <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam TPO, Foumbot Road (+237) 678 50 95 20 / 650 15 41 83 683 70 41 82</p>
         <div class="font-rale font-size-14">
             <a href="#" class="px-3 border-right border-left text-dark">Login</a>
-            <a href="#" class="px-3 border-right text-dark">Whishlist (0)</a>
+            <a href="#" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>
         </div>
     </div>
 

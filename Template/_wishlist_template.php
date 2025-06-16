@@ -1,18 +1,18 @@
 <!-- Wishlist section  -->
 <?php
-global$product;
-global$Cart;
+global $product;
+global $Cart;
+global $Wishlist;
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         if (isset($_POST['delete-cart-submit'])){
-            $deletedrecord = $Cart->deleteCart($_POST['item_id']);
+            $deletedrecord = $Wishlist->deleteWishlist($_POST['item_id']);
         }
 
         // get it back to cart
         if (isset($_POST['cart-submit'])){
-            $Cart->saveForLater($_POST['item_id'],'cart', 'wishlist');
+            $Wishlist->moveToCart($_POST['item_id']);
         }
-
     }
 
 ?>
