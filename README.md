@@ -24,7 +24,7 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the Repository**
    ```bash
-   git clone [repository-url]
+   git clone git@github.com:vector-gru/bl-eshopping.git
    cd bl-eshopping
    ```
 
