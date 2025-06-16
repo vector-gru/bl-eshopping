@@ -1,5 +1,6 @@
 <?php
     global$product;
+    session_start();
 ?>
  <!DOCTYPE html>
 <html lang="en">
@@ -44,8 +45,14 @@
     <div class="strip d-flex justify-content-between px-4 py-1 bg-light">
         <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam TPO, Foumbot Road (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
         <div class="font-rale font-size-14">
-            <a href="#" class="px-3 border-right border-left text-dark">Login</a>
-            <a href="#" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <span class="px-3 border-right text-dark">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                <a href="auth/logout.php" class="px-3 border-right text-dark">Logout</a>
+            <?php else: ?>
+                <a href="auth/login.php" class="px-3 border-right text-dark">Login</a>
+                <a href="auth/signup.php" class="px-3 border-right text-dark">Sign Up</a>
+            <?php endif; ?>
+            <a href="cart.php" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>
         </div>
     </div>
 
