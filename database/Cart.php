@@ -34,7 +34,7 @@ class Cart
     }
 
     // to get user_id and item_id and insert into cart table
-    public  function addToCart($userid, $itemid){
+    public function addToCart($userid, $itemid){
         if (isset($userid) && isset($itemid)){
             $params = array(
                 "user_id" => $userid,
@@ -43,11 +43,9 @@ class Cart
 
             // insert data into cart
             $result = $this->insertIntoCart($params);
-            if ($result){
-                // Reload Page
-                header("Location: " . $_SERVER['PHP_SELF']);
-            }
+            return $result;
         }
+        return false;
     }
 
     // delete cart item using cart item id

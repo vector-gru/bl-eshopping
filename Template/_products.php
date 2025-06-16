@@ -5,6 +5,15 @@
     global$Cart;
 
     $item_id = $_GET['item_id'] ?? 1;
+    
+    // request method post
+    if($_SERVER['REQUEST_METHOD'] == "POST"){
+        if (isset($_POST['product_submit'])){
+            // call method addToCart
+            $Cart->addToCart($_POST['user_id'], $_POST['item_id']);
+        }
+    }
+
     foreach ($product->getData() as $item) :
         if ($item['item_id'] == $item_id) :
 
@@ -22,9 +31,9 @@
                     <div class="col">
                         <?php
                         if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
-                            echo '<button type="submit" disabled class="btn btn-success font-size-16 form-control">In the Cart</button>';
+                            echo '<button type="button" disabled class="btn btn-success font-size-16 form-control">In the Cart</button>';
                         }else{
-                            echo '<button type="submit" name="top_sale_submit" class="btn btn-warning font-size-16 form-control">Add to Cart</button>';
+                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', 1)" class="btn btn-warning font-size-16 form-control">Add to Cart</button>';
                         }
                         ?>
                     </div>

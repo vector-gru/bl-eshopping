@@ -21,6 +21,9 @@
     <!-- Custom CSS file -->
     <link rel="stylesheet" href="style.css">
 
+    <!-- Custom JS file -->
+    <script src="assets/js/cart.js"></script>
+
     <?php
         // require functions.php file
         require ('functions.php');
@@ -41,8 +44,10 @@
 
     <!-- Primary Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark color-second-bg">
-        <img src="assets/blLogo3.png" style="width: 50px;" alt="logo">
-        <a class="navbar-brand" href="#">B&L e-Shopping</a>
+        <a href="index.php">
+            <img src="assets/blLogo3.png" style="width: 50px;" alt="logo">
+        </a>
+        <a class="navbar-brand" href="index.php">B&L e-Shopping</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -70,7 +75,7 @@
             <form action="#" class="font-size-14 font-rale">
                 <a href="cart.php" class="py-2 rounded-pill color-primary-bg">
                     <span class="font-size-16 px-2 text-white"><i class="fas fa-shopping-cart"></i></span>
-                    <span class="px-3 py-2 rounded-pill text-dark bg-light"><?php echo count($product->getData('cart'))?></span>
+                    <span class="px-3 py-2 rounded-pill text-dark bg-light cart-count"><?php echo count($product->getData('cart'))?></span>
                 </a>
             </form>
         </div>
