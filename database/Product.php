@@ -14,8 +14,16 @@ class Product
     }
 
     // fetch product data using getData Method
-    public function getData($table = 'product'){
-        $result = $this->db->con->query("SELECT * FROM {$table}");
+    public function getData($table = 'product', $user_id = null){
+        if ($table == 'cart' || $table == 'wishlist') {
+            if (!isset($_SESSION['user_id'])) {
+                return array(); // Return empty array if user is not logged in
+            }
+            $user_id = $_SESSION['user_id'];
+            $result = $this->db->con->query("SELECT * FROM {$table} WHERE user_id = {$user_id}");
+        } else {
+            $result = $this->db->con->query("SELECT * FROM {$table}");
+        }
 
         $resultArray = array();
 

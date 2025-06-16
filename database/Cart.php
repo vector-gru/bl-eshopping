@@ -35,7 +35,23 @@ class Cart
 
     // to get user_id and item_id and insert into cart table
     public function addToCart($userid, $itemid){
+        if (!isset($_SESSION['user_id'])) {
+            return false; // Return false if user is not logged in
+        }
+        
         if (isset($userid) && isset($itemid)){
+            // Verify that the user_id matches the logged-in user
+            if ($userid != $_SESSION['user_id']) {
+                return false;
+            }
+            
+            // Check if item is already in cart for this user
+            $query = "SELECT * FROM cart WHERE user_id = {$userid} AND item_id = {$itemid}";
+            $result = $this->db->con->query($query);
+            if ($result && mysqli_num_rows($result) > 0) {
+                return true; // Item already in cart
+            }
+            
             $params = array(
                 "user_id" => $userid,
                 "item_id" => $itemid
@@ -50,8 +66,12 @@ class Cart
 
     // delete cart item using cart item id
     public function deleteCart($item_id = null, $table = 'cart'){
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+        
         if($item_id != null){
-            $result = $this->db->con->query("DELETE FROM {$table} WHERE item_id={$item_id}");
+            $result = $this->db->con->query("DELETE FROM {$table} WHERE item_id={$item_id} AND user_id={$_SESSION['user_id']}");
             if($result){
                 header("Location:" . $_SERVER['PHP_SELF']);
             }

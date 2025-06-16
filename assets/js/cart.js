@@ -10,15 +10,18 @@ function addToCart(button, itemId, userId) {
     // Send AJAX request
     fetch('Template/ajax-cart.php', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'same-origin' // Include cookies in the request
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok: ' + response.status);
         }
         return response.json();
     })
     .then(data => {
+        console.log('Cart response:', data); // Debug log
+        
         if (data.success) {
             // Update button state
             button.classList.remove('btn-warning');
@@ -35,13 +38,18 @@ function addToCart(button, itemId, userId) {
         } else {
             // If failed, re-enable the button and show specific error message
             button.disabled = false;
-            alert(data.message || 'Failed to add item to cart. Please try again.');
+            let errorMessage = data.message || 'Failed to add item to cart.';
+            if (data.debug) {
+                console.error('Cart debug info:', data.debug);
+                errorMessage += '\n\nDebug info has been logged to console.';
+            }
+            alert(errorMessage);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Cart error:', error);
         button.disabled = false;
-        alert('An error occurred while adding to cart. Please try again.');
+        alert('An error occurred while adding to cart: ' + error.message);
     });
 }
 
@@ -57,15 +65,18 @@ function addToWishlist(button, itemId, userId) {
     // Send AJAX request
     fetch('Template/ajax-wishlist.php', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'same-origin' // Include cookies in the request
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok: ' + response.status);
         }
         return response.json();
     })
     .then(data => {
+        console.log('Wishlist response:', data); // Debug log
+        
         if (data.success) {
             // Update button state
             button.classList.remove('btn-warning');
@@ -82,12 +93,17 @@ function addToWishlist(button, itemId, userId) {
         } else {
             // If failed, re-enable the button and show specific error message
             button.disabled = false;
-            alert(data.message || 'Failed to add item to wishlist. Please try again.');
+            let errorMessage = data.message || 'Failed to add item to wishlist.';
+            if (data.debug) {
+                console.error('Wishlist debug info:', data.debug);
+                errorMessage += '\n\nDebug info has been logged to console.';
+            }
+            alert(errorMessage);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Wishlist error:', error);
         button.disabled = false;
-        alert('An error occurred while adding to wishlist. Please try again.');
+        alert('An error occurred while adding to wishlist: ' + error.message);
     });
 } 

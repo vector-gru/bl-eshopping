@@ -6,17 +6,31 @@
     global $Wishlist;
 
     $item_id = $_GET['item_id'] ?? 1;
-    $user_id = 1; // Default user ID for now
+    
+    // Check if user is logged in
+    if (!isset($_SESSION['user_id'])) {
+        echo '<div class="alert alert-warning" role="alert">
+                Please <a href="auth/login.php">login</a> to add items to cart or wishlist.
+              </div>';
+        $user_id = null;
+    } else {
+        $user_id = $_SESSION['user_id'];
+    }
     
     // request method post
     if($_SERVER['REQUEST_METHOD'] == "POST"){
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: auth/login.php");
+            exit();
+        }
+        
         if (isset($_POST['product_submit'])){
             // call method addToCart
-            $Cart->addToCart($_POST['user_id'], $_POST['item_id']);
+            $Cart->addToCart($_SESSION['user_id'], $_POST['item_id']);
         }
         if (isset($_POST['wishlist_submit'])){
             // call method addToWishlist
-            $Wishlist->addToWishlist($_POST['user_id'], $_POST['item_id']);
+            $Wishlist->addToWishlist($_SESSION['user_id'], $_POST['item_id']);
         }
     }
 
@@ -38,12 +52,16 @@
                     </div>
                     <div class="col">
                         <?php
-                        if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
+                        if (!isset($_SESSION['user_id'])) {
+                            echo '<button type="button" disabled class="btn btn-warning btn-block">
+                                    <i class="fas fa-cart-plus"></i> Login to Add to Cart
+                                  </button>';
+                        } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
                             echo '<button type="button" disabled class="btn btn-success btn-block">
                                     <i class="fas fa-shopping-cart"></i> In Cart
                                   </button>';
-                        }else{
-                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$user_id.')" class="btn btn-warning btn-block">
+                        } else {
+                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-warning btn-block">
                                     <i class="fas fa-cart-plus"></i> Add to Cart
                                   </button>';
                         }
@@ -51,18 +69,18 @@
                     </div>
                     <div class="col">
                         <?php
-                        if (in_array($item['item_id'], $Wishlist->getWishlistId($product->getData('wishlist')) ?? [])){
+                        if (!isset($_SESSION['user_id'])) {
+                            echo '<button type="button" disabled class="btn btn-info btn-block">
+                                    <i class="far fa-heart"></i> Login to Add to Wishlist
+                                  </button>';
+                        } else if (in_array($item['item_id'], $Wishlist->getWishlistId($product->getData('wishlist')) ?? [])){
                             echo '<button type="button" disabled class="btn btn-success btn-block">
                                     <i class="fas fa-heart"></i> In Wishlist
                                   </button>';
-                        }else{
-                            echo '<form method="post">
-                                    <input type="hidden" name="user_id" value="'.$user_id.'">
-                                    <input type="hidden" name="item_id" value="'.$item['item_id'].'">
-                                    <button type="submit" name="wishlist_submit" class="btn btn-info btn-block">
-                                        <i class="far fa-heart"></i> Add to Wishlist
-                                    </button>
-                                  </form>';
+                        } else {
+                            echo '<button type="button" onclick="addToWishlist(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-info btn-block">
+                                    <i class="far fa-heart"></i> Add to Wishlist
+                                  </button>';
                         }
                         ?>
                     </div>

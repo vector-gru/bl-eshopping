@@ -32,7 +32,23 @@ class Wishlist
 
     // to get user_id and item_id and insert into wishlist table
     public function addToWishlist($userid, $itemid){
+        if (!isset($_SESSION['user_id'])) {
+            return false; // Return false if user is not logged in
+        }
+        
         if (isset($userid) && isset($itemid)){
+            // Verify that the user_id matches the logged-in user
+            if ($userid != $_SESSION['user_id']) {
+                return false;
+            }
+            
+            // Check if item is already in wishlist for this user
+            $query = "SELECT * FROM wishlist WHERE user_id = {$userid} AND item_id = {$itemid}";
+            $result = $this->db->con->query($query);
+            if ($result && mysqli_num_rows($result) > 0) {
+                return true; // Item already in wishlist
+            }
+            
             $params = array(
                 "user_id" => $userid,
                 "item_id" => $itemid
@@ -47,8 +63,12 @@ class Wishlist
 
     // delete wishlist item using item id
     public function deleteWishlist($item_id = null, $table = 'wishlist'){
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+        
         if($item_id != null){
-            $result = $this->db->con->query("DELETE FROM {$table} WHERE item_id={$item_id}");
+            $result = $this->db->con->query("DELETE FROM {$table} WHERE item_id={$item_id} AND user_id={$_SESSION['user_id']}");
             if($result){
                 header("Location:" . $_SERVER['PHP_SELF']);
             }
@@ -68,9 +88,15 @@ class Wishlist
 
     // move item from wishlist to cart
     public function moveToCart($item_id = null){
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+        
         if ($item_id != null){
-            $query = "INSERT INTO cart SELECT * FROM wishlist WHERE item_id={$item_id};";
-            $query .= "DELETE FROM wishlist WHERE item_id={$item_id};";
+            $query = "INSERT INTO cart (user_id, item_id) 
+                     SELECT user_id, item_id FROM wishlist 
+                     WHERE item_id={$item_id} AND user_id={$_SESSION['user_id']};";
+            $query .= "DELETE FROM wishlist WHERE item_id={$item_id} AND user_id={$_SESSION['user_id']};";
 
             // execute multiple query
             $result = $this->db->con->multi_query($query);
