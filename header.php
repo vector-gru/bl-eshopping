@@ -18,11 +18,18 @@
     <!-- font awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
 
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Owl Carousel JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    
     <!-- Custom CSS file -->
     <link rel="stylesheet" href="style.css">
 
     <!-- Custom JS file -->
     <script src="assets/js/cart.js"></script>
+    <script src="assets/js/banner.js"></script>
 
     <?php
         // require functions.php file
@@ -35,7 +42,7 @@
 <!-- start #header -->
 <header id="header">
     <div class="strip d-flex justify-content-between px-4 py-1 bg-light">
-        <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam TPO, Foumbot Road (+237) 678 50 95 20 / 650 15 41 83 683 70 41 82</p>
+        <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam TPO, Foumbot Road (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
         <div class="font-rale font-size-14">
             <a href="#" class="px-3 border-right border-left text-dark">Login</a>
             <a href="#" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>

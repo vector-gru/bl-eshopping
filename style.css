@@ -102,3 +102,73 @@ button:focus {
 }
 
 /*# sourceMappingURL=style.css.map */
+
+/* Banner Carousel Styles */
+#banner-area .owl-carousel .item {
+    position: relative;
+    overflow: hidden;
+}
+
+#banner-area .owl-carousel .item img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+}
+
+#banner-area .owl-carousel .item:hover img {
+    transform: scale(1.05);
+}
+
+#banner-area .owl-nav button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.7) !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+    transition: all 0.3s ease;
+}
+
+#banner-area .owl-nav button:hover {
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
+#banner-area .owl-nav button.owl-prev {
+    left: 20px;
+}
+
+#banner-area .owl-nav button.owl-next {
+    right: 20px;
+}
+
+#banner-area .owl-dots {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+#banner-area .owl-dots button.owl-dot {
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+#banner-area .owl-dots button.owl-dot.active {
+    background: #fff !important;
+    transform: scale(1.2);
+}
+
+/* Fade Animation */
+#banner-area .owl-carousel .owl-item {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#banner-area .owl-carousel .owl-item.active {
+    opacity: 1;
+}
