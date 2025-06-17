@@ -102,6 +102,27 @@ $user_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div id="modal-order-items"></div>
                     </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Contact Admin</h6>
+                                <p class="mb-2">
+                                    <strong>WhatsApp:</strong> +237678509520<br>
+                                    <small class="text-muted">You can copy this order and forward it to admin over WhatsApp</small>
+                                </p>
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-success" id="copy-order-btn">
+                                        <i class="fas fa-copy me-2"></i>Copy Order
+                                    </button>
+                                    <a href="https://wa.me/237678509520" class="btn btn-outline-success" target="_blank">
+                                        <i class="fab fa-whatsapp me-2"></i>Open WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -128,6 +149,85 @@ document.querySelectorAll('[data-bs-target="#orderDetailsModal"]').forEach(butto
         
         // Update order items
         document.getElementById('modal-order-items').innerHTML = order.items;
+        
+        // Store order data for copy functionality
+        window.currentOrderData = order;
     });
 });
+
+// Handle copy order button
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'copy-order-btn') {
+        const order = window.currentOrderData;
+        if (order) {
+            // Create WhatsApp message
+            const message = `Order #${order.order_number}\n\nItems: ${order.items}\nTotal: ${order.currency} ${parseFloat(order.total_amount).toFixed(2)}\nStatus: ${order.status}`;
+            
+            // Copy to clipboard
+            copyToClipboard(message);
+            
+            // Show notification
+            showNotification('Order details copied to clipboard!', 'success');
+        }
+    }
+});
+
+// Function to copy text to clipboard
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // Use modern clipboard API
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('Text copied to clipboard');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            fallbackCopyToClipboard(text);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(text);
+    }
+}
+
+// Fallback clipboard function
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        console.log('Text copied to clipboard (fallback)');
+    } catch (err) {
+        console.error('Fallback copy failed: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Function to show notifications
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
 </script> 

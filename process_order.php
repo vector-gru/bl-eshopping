@@ -1,40 +1,50 @@
 <?php
+// Prevent any output before JSON response
+ob_start();
+
 session_start();
 require_once 'database/db_connect.php';
 require_once 'database/OrderHelper.php';
-require_once 'auth/admin_auth.php';
+
+// Clear any output buffer
+ob_clean();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        http_response_code(401);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'User not logged in']);
+        exit();
+    } else {
+        header('Location: login.php');
+        exit();
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $conn = getDBConnection();
-    
     try {
-        $conn->beginTransaction();
+        $conn = getDBConnection();
         
-        // Get cart items
+        // Get cart items directly from database
         $stmt = $conn->prepare("
-            SELECT c.*, p.item_price, p.currency 
+            SELECT c.*, p.item_price, p.item_name, p.currency 
             FROM cart c 
             JOIN product p ON c.item_id = p.item_id 
             WHERE c.user_id = ?
         ");
         $stmt->execute([$_SESSION['user_id']]);
-        $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        if (empty($cart_items)) {
+        if (empty($cartItems)) {
             throw new Exception("Cart is empty");
         }
         
         // Calculate total amount
         $total_amount = 0;
-        $currency = $cart_items[0]['currency']; // Use the currency from the first item
+        $currency = $cartItems[0]['currency'] ?? 'XAF';
         
-        foreach ($cart_items as $item) {
+        foreach ($cartItems as $item) {
             $total_amount += $item['item_price'] * $item['quantity'];
         }
         
@@ -56,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?)
         ");
         
-        foreach ($cart_items as $item) {
+        foreach ($cartItems as $item) {
             $stmt->execute([
                 $order_id,
                 $item['item_id'],
@@ -70,20 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get order items for WhatsApp message
-        $stmt = $conn->prepare("
-            SELECT p.item_name, oi.quantity, oi.price 
-            FROM order_items oi 
-            JOIN product p ON oi.item_id = p.item_id 
-            WHERE oi.order_id = ?
-        ");
-        $stmt->execute([$order_id]);
-        $order_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
         // Format items for WhatsApp message
         $items_text = "";
-        foreach ($order_items as $item) {
-            $item_total = $item['price'] * $item['quantity'];
+        foreach ($cartItems as $item) {
+            $item_total = $item['item_price'] * $item['quantity'];
             $items_text .= "- {$item['item_name']} (Qty: {$item['quantity']}) - {$currency} " . number_format($item_total, 2) . "\n";
         }
         
@@ -101,17 +101,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         
-        $conn->commit();
+        // Clear any output buffer before JSON response
+        ob_clean();
         
-        // Redirect to WhatsApp with the order details
-        $whatsapp_url = "https://wa.me/{$whatsapp_number}?text=" . urlencode($message);
-        header("Location: {$whatsapp_url}");
+        // Return JSON response
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'order_number' => $orderNumber,
+            'message' => $message,
+            'whatsapp_number' => $whatsapp_number,
+            'whatsapp_url' => "https://wa.me/{$whatsapp_number}?text=" . urlencode($message)
+        ]);
         exit();
         
     } catch (Exception $e) {
-        $conn->rollBack();
-        $_SESSION['error'] = "Error processing order: " . $e->getMessage();
-        header('Location: cart.php');
+        if (isset($conn)) {
+            $conn->rollBack();
+        }
+        
+        // Clear any output buffer before JSON response
+        ob_clean();
+        
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode(['error' => "Error processing order: " . $e->getMessage()]);
         exit();
     }
 } else {
