@@ -79,7 +79,7 @@
                                   </button>';
                         } else {
                             echo '<button type="button" onclick="addToWishlist(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-info btn-block">
-                                    <i class="far fa-heart"></i> Add to Wishlist
+                                        <i class="far fa-heart"></i> Add to Wishlist
                                   </button>';
                         }
                         ?>

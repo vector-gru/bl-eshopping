@@ -45,10 +45,10 @@
                                 if (!isset($_SESSION['user_id'])) {
                                     echo '<button type="button" disabled class="btn btn-warning font-size-12">Login to Add to Cart</button>';
                                 } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
-                                    echo '<button type="button" disabled class="btn btn-success font-size-12">In the Cart</button>';
+                                echo '<button type="button" disabled class="btn btn-success font-size-12">In the Cart</button>';
                                 } else {
                                     echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-warning font-size-12">Add to Cart</button>';
-                                }
+                            }
                             ?>
                         </div>
                     </div>

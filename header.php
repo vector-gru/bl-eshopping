@@ -1,6 +1,27 @@
 <?php
-    global$product;
+    // Enable error reporting
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
+    global $product;
     session_start();
+
+    // Debug information
+    if (isset($_SESSION['user_id'])) {
+        error_log("User ID: " . $_SESSION['user_id']);
+        try {
+            require_once __DIR__ . '/database/db_connect.php';
+            $conn = getDBConnection();
+            $stmt = $conn->prepare("SELECT is_admin FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            error_log("Admin status: " . ($result ? json_encode($result) : 'no result'));
+        } catch (Exception $e) {
+            error_log("Database error: " . $e->getMessage());
+        }
+    } else {
+        error_log("No user session");
+    }
 ?>
  <!DOCTYPE html>
 <html lang="en">
@@ -47,6 +68,9 @@
         <div class="font-rale font-size-14">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <span class="px-3 border-right text-dark">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                <?php if (isAdmin()): ?>
+                    <a href="admin/" class="px-3 border-right text-dark"><i class="fas fa-cog"></i> Admin Panel</a>
+                <?php endif; ?>
                 <a href="auth/logout.php" class="px-3 border-right text-dark">Logout</a>
             <?php else: ?>
                 <a href="auth/login.php" class="px-3 border-right text-dark">Login</a>
