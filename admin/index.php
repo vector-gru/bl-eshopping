@@ -105,7 +105,7 @@ $orderCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-danger" href="../logout.php">
+                            <a class="nav-link text-danger" href="../auth/admin_logout.php">
                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                             </a>
                         </li>
@@ -169,7 +169,7 @@ $orderCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
                                 ?>
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h6 class="mb-0">Order #<?php echo $order['id']; ?></h6>
+                                            <h6 class="mb-0">Order #<?php echo $order['order_number']; ?></h6>
                                             <small class="text-muted">By <?php echo htmlspecialchars($order['username']); ?></small>
                                         </div>
                                         <span class="badge bg-<?php echo $order['status'] == 'completed' ? 'success' : 'warning'; ?>">

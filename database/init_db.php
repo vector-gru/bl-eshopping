@@ -100,6 +100,7 @@ try {
     // Create orders table
     $sql = "CREATE TABLE IF NOT EXISTS orders (
         id INT(11) NOT NULL AUTO_INCREMENT,
+        order_number VARCHAR(20) NOT NULL UNIQUE,
         user_id INT(11) NOT NULL,
         total_amount DECIMAL(10,2) NOT NULL,
         currency ENUM('XAF','USD') DEFAULT 'XAF',

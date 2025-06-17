@@ -41,7 +41,7 @@ $stmt = $conn->query("
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // WhatsApp configuration
-$whatsapp_number = "+250788888888"; // Replace with your WhatsApp number
+$whatsapp_number = "+237678509520"; // Replace with your WhatsApp number
 ?>
 
 <!DOCTYPE html>
@@ -102,7 +102,7 @@ $whatsapp_number = "+250788888888"; // Replace with your WhatsApp number
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-danger" href="../logout.php">
+                            <a class="nav-link text-danger" href="../auth/admin_logout.php">
                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                             </a>
                         </li>
@@ -139,7 +139,7 @@ $whatsapp_number = "+250788888888"; // Replace with your WhatsApp number
                                 <tbody>
                                     <?php foreach ($orders as $order): ?>
                                     <tr>
-                                        <td>#<?php echo $order['id']; ?></td>
+                                        <td>#<?php echo $order['order_number']; ?></td>
                                         <td>
                                             <div><?php echo htmlspecialchars($order['username']); ?></div>
                                             <small class="text-muted">
@@ -163,7 +163,7 @@ $whatsapp_number = "+250788888888"; // Replace with your WhatsApp number
                                         </td>
                                         <td><?php echo date('M d, Y H:i', strtotime($order['created_at'])); ?></td>
                                         <td>
-                                            <a href="https://wa.me/<?php echo $whatsapp_number; ?>?text=<?php echo urlencode("New order #{$order['id']} from {$order['username']}\nItems: {$order['items']}\nTotal: {$order['currency']} {$order['total_amount']}"); ?>" 
+                                            <a href="https://wa.me/<?php echo $whatsapp_number; ?>?text=<?php echo urlencode("Order #{$order['order_number']} from {$order['username']}\nItems: {$order['items']}\nTotal: {$order['currency']} {$order['total_amount']}"); ?>" 
                                                class="btn btn-sm btn-success" 
                                                target="_blank">
                                                 <i class="fab fa-whatsapp"></i> Contact
@@ -234,7 +234,7 @@ $whatsapp_number = "+250788888888"; // Replace with your WhatsApp number
                 
                 // Update order information
                 document.getElementById('modal-order-info').innerHTML = `
-                    <strong>Order ID:</strong> #${order.id}<br>
+                    <strong>Order Number:</strong> #${order.order_number}<br>
                     <strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}<br>
                     <strong>Status:</strong> ${order.status}<br>
                     <strong>Total:</strong> ${order.currency} ${parseFloat(order.total_amount).toFixed(2)}

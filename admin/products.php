@@ -130,7 +130,7 @@ $products = $conn->query("SELECT * FROM product ORDER BY item_register DESC")->f
                             </a>
                         </li>
                         <li class="nav-item mt-4">
-                            <a class="nav-link text-danger" href="../logout.php">
+                            <a class="nav-link text-danger" href="../auth/admin_logout.php">
                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                             </a>
                         </li>
