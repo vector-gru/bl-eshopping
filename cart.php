@@ -17,6 +17,9 @@ ob_start();
 
     /* !include wishlist-template section */
 
+    /* include my orders section */
+    include ('Template/_my_orders.php');
+    /* !include my orders section */
 
     /* include new-arrivals section */
     include ('Template/_new-arrivals.php');

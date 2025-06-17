@@ -134,6 +134,7 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>S/N</th>
                                         <th>ID</th>
                                         <th>Username</th>
                                         <th>Email</th>
@@ -146,8 +147,9 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($users as $user): ?>
+                                    <?php foreach ($users as $index => $user): ?>
                                     <tr>
+                                        <td><?php echo $index + 1; ?></td>
                                         <td><?php echo $user['id']; ?></td>
                                         <td><?php echo htmlspecialchars($user['username']); ?></td>
                                         <td><?php echo htmlspecialchars($user['email']); ?></td>

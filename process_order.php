@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Get order items for WhatsApp message
         $stmt = $conn->prepare("
-            SELECT p.item_name, oi.quantity 
+            SELECT p.item_name, oi.quantity, oi.price 
             FROM order_items oi 
             JOIN product p ON oi.item_id = p.item_id 
             WHERE oi.order_id = ?
@@ -83,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Format items for WhatsApp message
         $items_text = "";
         foreach ($order_items as $item) {
-            $items_text .= "- {$item['item_name']} (Qty: {$item['quantity']})\n";
+            $item_total = $item['price'] * $item['quantity'];
+            $items_text .= "- {$item['item_name']} (Qty: {$item['quantity']}) - {$currency} " . number_format($item_total, 2) . "\n";
         }
         
         // WhatsApp configuration

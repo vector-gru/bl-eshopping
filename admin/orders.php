@@ -127,6 +127,7 @@ $whatsapp_number = "+237678509520"; // Replace with your WhatsApp number
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>S/N</th>
                                         <th>Order ID</th>
                                         <th>Customer</th>
                                         <th>Items</th>
@@ -137,8 +138,9 @@ $whatsapp_number = "+237678509520"; // Replace with your WhatsApp number
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($orders as $order): ?>
+                                    <?php foreach ($orders as $index => $order): ?>
                                     <tr>
+                                        <td><?php echo $index + 1; ?></td>
                                         <td>#<?php echo $order['order_number']; ?></td>
                                         <td>
                                             <div><?php echo htmlspecialchars($order['username']); ?></div>

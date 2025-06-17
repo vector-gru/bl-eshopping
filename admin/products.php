@@ -158,6 +158,7 @@ $products = $conn->query("SELECT * FROM product ORDER BY item_register DESC")->f
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>S/N</th>
                                         <th>Image</th>
                                         <th>Name</th>
                                         <th>Price</th>
@@ -166,8 +167,9 @@ $products = $conn->query("SELECT * FROM product ORDER BY item_register DESC")->f
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($products as $product): ?>
+                                    <?php foreach ($products as $index => $product): ?>
                                     <tr>
+                                        <td><?php echo $index + 1; ?></td>
                                         <td>
                                             <img src="<?php echo htmlspecialchars($product['item_image']); ?>" 
                                                  alt="<?php echo htmlspecialchars($product['item_name']); ?>"
