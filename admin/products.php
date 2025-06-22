@@ -537,10 +537,30 @@ $products = $conn->query("
                             <div id="sizes-container">
                                 <div class="row size-row mb-2">
                                     <div class="col-md-5">
-                                        <input type="text" class="form-control" name="sizes[0][name]" placeholder="Size Name (e.g., Storage, RAM, Color)">
+                                        <select class="form-select size-name-select" name="sizes[0][name]" onchange="updateSizeValueOptions(this)">
+                                            <option value="">Select Size Type</option>
+                                            <option value="Storage">Storage</option>
+                                            <option value="RAM">RAM</option>
+                                            <option value="Color">Color</option>
+                                            <option value="Size">Size</option>
+                                            <option value="Weight">Weight</option>
+                                            <option value="Screen Size">Screen Size</option>
+                                            <option value="Battery">Battery</option>
+                                            <option value="Processor">Processor</option>
+                                            <option value="Camera">Camera</option>
+                                            <option value="Material">Material</option>
+                                            <option value="Capacity">Capacity</option>
+                                            <option value="Length">Length</option>
+                                            <option value="Width">Width</option>
+                                            <option value="Height">Height</option>
+                                            <option value="Custom">Custom</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="text" class="form-control" name="sizes[0][value]" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
+                                        <select class="form-select size-value-select" name="sizes[0][value]">
+                                            <option value="">Select Size Value</option>
+                                            <!-- Options will be populated based on size name selection -->
+                                        </select>
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-danger btn-sm remove-size" style="display: none;">
@@ -668,6 +688,74 @@ $products = $conn->query("
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Size value options mapping
+        const sizeValueOptions = {
+            'Storage': ['16GB', '32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB', '4TB', '8TB'],
+            'RAM': ['2GB', '4GB', '6GB', '8GB', '12GB', '16GB', '32GB', '64GB'],
+            'Color': ['Black', 'White', 'Silver', 'Gold', 'Rose Gold', 'Blue', 'Red', 'Green', 'Yellow', 'Purple', 'Pink', 'Gray', 'Brown', 'Orange'],
+            'Size': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
+            'Weight': ['50g', '100g', '200g', '300g', '500g', '1kg', '2kg', '5kg', '10kg'],
+            'Screen Size': ['4.7"', '5.5"', '6.1"', '6.7"', '7"', '10.1"', '11"', '12.9"', '13"', '14"', '15.6"', '17"', '21.5"', '24"', '27"', '32"', '43"', '55"', '65"', '75"'],
+            'Battery': ['2000mAh', '3000mAh', '4000mAh', '5000mAh', '6000mAh', '8000mAh', '10000mAh', '20000mAh'],
+            'Processor': ['Intel i3', 'Intel i5', 'Intel i7', 'Intel i9', 'AMD Ryzen 3', 'AMD Ryzen 5', 'AMD Ryzen 7', 'AMD Ryzen 9', 'Apple M1', 'Apple M2', 'Snapdragon 8', 'MediaTek Dimensity'],
+            'Camera': ['12MP', '16MP', '20MP', '24MP', '48MP', '64MP', '108MP', '12MP + 12MP', '16MP + 16MP', '48MP + 12MP'],
+            'Material': ['Plastic', 'Metal', 'Glass', 'Leather', 'Fabric', 'Silicone', 'Wood', 'Carbon Fiber', 'Aluminum', 'Stainless Steel'],
+            'Capacity': ['100ml', '250ml', '500ml', '1L', '2L', '5L', '10L', '20L', '50L', '100L'],
+            'Length': ['10cm', '20cm', '30cm', '50cm', '1m', '2m', '5m', '10m'],
+            'Width': ['5cm', '10cm', '15cm', '20cm', '30cm', '50cm', '1m'],
+            'Height': ['5cm', '10cm', '15cm', '20cm', '30cm', '50cm', '1m', '2m'],
+            'Custom': []
+        };
+
+        // Update size value options based on selected size name
+        function updateSizeValueOptions(sizeNameSelect) {
+            const sizeRow = sizeNameSelect.closest('.size-row');
+            const sizeValueSelect = sizeRow.querySelector('.size-value-select');
+            const selectedSizeName = sizeNameSelect.value;
+            
+            // Clear existing options
+            sizeValueSelect.innerHTML = '<option value="">Select Size Value</option>';
+            
+            if (selectedSizeName && selectedSizeName !== 'Custom') {
+                // Add predefined options
+                sizeValueOptions[selectedSizeName].forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    sizeValueSelect.appendChild(optionElement);
+                });
+                
+                // Add "Other" option for custom values
+                const otherOption = document.createElement('option');
+                otherOption.value = 'Other';
+                otherOption.textContent = 'Other (Custom)';
+                sizeValueSelect.appendChild(otherOption);
+            } else if (selectedSizeName === 'Custom') {
+                // For custom, add a text input option
+                const customOption = document.createElement('option');
+                customOption.value = 'custom_input';
+                customOption.textContent = 'Enter custom value';
+                sizeValueSelect.appendChild(customOption);
+            }
+        }
+
+        // Handle custom value input
+        function handleCustomValue(sizeValueSelect) {
+            if (sizeValueSelect.value === 'custom_input') {
+                const customValue = prompt('Enter custom value:');
+                if (customValue) {
+                    // Create a new option with the custom value
+                    const customOption = document.createElement('option');
+                    customOption.value = customValue;
+                    customOption.textContent = customValue;
+                    customOption.selected = true;
+                    sizeValueSelect.appendChild(customOption);
+                } else {
+                    sizeValueSelect.value = '';
+                }
+            }
+        }
+
         // Handle edit product modal
         document.querySelectorAll('.edit-product').forEach(button => {
             button.addEventListener('click', function() {
@@ -739,10 +827,34 @@ $products = $conn->query("
             sizeRow.className = 'row size-row mb-2';
             sizeRow.innerHTML = `
                 <div class="col-md-5">
-                    <input type="text" class="form-control" name="sizes[${sizeIndex}][name]" value="${name}" placeholder="Size Name (e.g., Storage, RAM, Color)">
+                    <select class="form-select size-name-select" name="sizes[${sizeIndex}][name]" onchange="updateSizeValueOptions(this)">
+                        <option value="">Select Size Type</option>
+                        <option value="Storage" ${name === 'Storage' ? 'selected' : ''}>Storage</option>
+                        <option value="RAM" ${name === 'RAM' ? 'selected' : ''}>RAM</option>
+                        <option value="Color" ${name === 'Color' ? 'selected' : ''}>Color</option>
+                        <option value="Size" ${name === 'Size' ? 'selected' : ''}>Size</option>
+                        <option value="Weight" ${name === 'Weight' ? 'selected' : ''}>Weight</option>
+                        <option value="Screen Size" ${name === 'Screen Size' ? 'selected' : ''}>Screen Size</option>
+                        <option value="Battery" ${name === 'Battery' ? 'selected' : ''}>Battery</option>
+                        <option value="Processor" ${name === 'Processor' ? 'selected' : ''}>Processor</option>
+                        <option value="Camera" ${name === 'Camera' ? 'selected' : ''}>Camera</option>
+                        <option value="Material" ${name === 'Material' ? 'selected' : ''}>Material</option>
+                        <option value="Capacity" ${name === 'Capacity' ? 'selected' : ''}>Capacity</option>
+                        <option value="Length" ${name === 'Length' ? 'selected' : ''}>Length</option>
+                        <option value="Width" ${name === 'Width' ? 'selected' : ''}>Width</option>
+                        <option value="Height" ${name === 'Height' ? 'selected' : ''}>Height</option>
+                        <option value="Custom" ${name === 'Custom' ? 'selected' : ''}>Custom</option>
+                    </select>
                 </div>
                 <div class="col-md-5">
-                    <input type="text" class="form-control" name="sizes[${sizeIndex}][value]" value="${value}" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
+                    <select class="form-select size-value-select" name="sizes[${sizeIndex}][value]" onchange="handleCustomValue(this)">
+                        <option value="">Select Size Value</option>
+                        ${name && sizeValueOptions[name] ? sizeValueOptions[name].map(option => 
+                            `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`
+                        ).join('') : ''}
+                        ${name && name !== 'Custom' ? '<option value="Other">Other (Custom)</option>' : ''}
+                        ${name === 'Custom' ? '<option value="custom_input">Enter custom value</option>' : ''}
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="button" class="btn btn-danger btn-sm remove-size" onclick="removeSize(this)">
@@ -757,14 +869,14 @@ $products = $conn->query("
         function removeSize(button) {
             button.closest('.size-row').remove();
             // Reindex the remaining size rows
-            const container = document.getElementById('edit-sizes-container');
+            const container = button.closest('#sizes-container, #edit-sizes-container');
             container.querySelectorAll('.size-row').forEach((row, index) => {
-                row.querySelectorAll('input').forEach(input => {
-                    const name = input.name;
+                row.querySelectorAll('select').forEach(select => {
+                    const name = select.name;
                     if (name.includes('[name]')) {
-                        input.name = `sizes[${index}][name]`;
+                        select.name = `sizes[${index}][name]`;
                     } else if (name.includes('[value]')) {
-                        input.name = `sizes[${index}][value]`;
+                        select.name = `sizes[${index}][value]`;
                     }
                 });
             });
@@ -773,23 +885,7 @@ $products = $conn->query("
         // Add size button handlers
         document.getElementById('add-size-btn').addEventListener('click', function() {
             const container = document.getElementById('sizes-container');
-            const sizeIndex = container.children.length;
-            const sizeRow = document.createElement('div');
-            sizeRow.className = 'row size-row mb-2';
-            sizeRow.innerHTML = `
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="sizes[${sizeIndex}][name]" placeholder="Size Name (e.g., Storage, RAM, Color)">
-                </div>
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="sizes[${sizeIndex}][value]" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger btn-sm remove-size" onclick="removeSize(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            container.appendChild(sizeRow);
+            addSizeRow(container);
         });
         
         document.getElementById('edit-add-size-btn').addEventListener('click', function() {

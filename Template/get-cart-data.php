@@ -23,7 +23,7 @@ try {
     
     // Get current cart data with product information
     $stmt = $conn->prepare("
-        SELECT c.*, p.item_name, p.item_price, p.item_brand, p.currency,
+        SELECT c.*, p.item_name, p.item_price, p.old_price, p.item_brand, p.currency,
             (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
         FROM cart c 
         JOIN product p ON c.item_id = p.item_id 

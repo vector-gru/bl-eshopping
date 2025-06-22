@@ -75,7 +75,7 @@ try {
     
     // Get updated cart data for response
     $stmt = $conn->prepare("
-        SELECT c.*, p.item_price, p.item_name, p.currency 
+        SELECT c.*, p.item_price, p.item_name, p.currency, p.old_price
         FROM cart c 
         JOIN product p ON c.item_id = p.item_id 
         WHERE c.user_id = ? AND c.item_id = ?
@@ -85,6 +85,12 @@ try {
     
     // Calculate new total for this item
     $item_total = $cart_item['item_price'] * $new_quantity;
+    
+    // Calculate savings
+    $savings_amount = 0;
+    if ($cart_item['old_price'] && $cart_item['old_price'] > $cart_item['item_price']) {
+        $savings_amount = ($cart_item['old_price'] - $cart_item['item_price']) * $new_quantity;
+    }
     
     // Get cart total
     $stmt = $conn->prepare("
@@ -103,7 +109,9 @@ try {
         'quantity' => $new_quantity,
         'item_total' => $item_total,
         'cart_total' => $cart_total,
-        'currency' => $cart_item['currency'] ?? 'XAF'
+        'currency' => $cart_item['currency'] ?? 'XAF',
+        'old_price' => $cart_item['old_price'] ?? null,
+        'savings_amount' => $savings_amount
     ]);
     
 } catch (Exception $e) {

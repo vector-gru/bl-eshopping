@@ -73,7 +73,17 @@
 
                         <div class="col-sm-2 text-right">
                             <div class="font-size-20 text-danger font-baloo item-total" data-id="<?php echo $item['item_id']; ?>">
-                                <?php echo $product->formatPrice(($item['item_price'] ?? 0) * ($item['quantity'] ?? 1), $item['currency'] ?? 'XAF'); ?>
+                                <?php 
+                                    $savings_amount = $product->getSavingsAmount($item['item_id']);
+                                    $savings_percentage = $product->getSavingsPercentage($item['item_id']);
+                                ?>
+                                <?php if ($item['old_price'] && $item['old_price'] > $item['item_price']): ?>
+                                    <div class="text-muted text-decoration-line-through"><?php echo $product->formatPrice($item['old_price'], $item['currency'] ?? 'XAF'); ?></div>
+                                <?php endif; ?>
+                                <div><?php echo $product->formatPrice(($item['item_price'] ?? 0) * ($item['quantity'] ?? 1), $item['currency'] ?? 'XAF'); ?></div>
+                                <?php if ($savings_amount > 0): ?>
+                                    <small class="text-success">Save <?php echo $product->formatPrice($savings_amount * ($item['quantity'] ?? 1), $item['currency'] ?? 'XAF'); ?></small>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -263,7 +273,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         const formattedPrice = currency === 'USD' ? 
                             '$' + parseFloat(data.item_total).toFixed(2) : 
                             parseFloat(data.item_total).toFixed(2) + ' XAF';
-                        itemTotal.textContent = formattedPrice;
+                        
+                        // Clear current content
+                        itemTotal.innerHTML = '';
+                        
+                        // Add old price if it exists
+                        if (data.old_price && data.old_price > parseFloat(data.item_total) / data.quantity) {
+                            const oldPriceDiv = document.createElement('div');
+                            oldPriceDiv.className = 'text-muted text-decoration-line-through';
+                            const oldPriceFormatted = currency === 'USD' ? 
+                                '$' + parseFloat(data.old_price * data.quantity).toFixed(2) : 
+                                parseFloat(data.old_price * data.quantity).toFixed(2) + ' XAF';
+                            oldPriceDiv.textContent = oldPriceFormatted;
+                            itemTotal.appendChild(oldPriceDiv);
+                        }
+                        
+                        // Add current total
+                        const currentTotalDiv = document.createElement('div');
+                        currentTotalDiv.textContent = formattedPrice;
+                        itemTotal.appendChild(currentTotalDiv);
+                        
+                        // Add savings if it exists
+                        if (data.savings_amount > 0) {
+                            const savingsDiv = document.createElement('small');
+                            savingsDiv.className = 'text-success';
+                            const savingsFormatted = currency === 'USD' ? 
+                                '$' + parseFloat(data.savings_amount).toFixed(2) : 
+                                parseFloat(data.savings_amount).toFixed(2) + ' XAF';
+                            savingsDiv.textContent = 'Save ' + savingsFormatted;
+                            itemTotal.appendChild(savingsDiv);
+                        }
                     }
 
                     // Update cart subtotal
