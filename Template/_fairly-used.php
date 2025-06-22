@@ -5,14 +5,6 @@
 
     // Get only fairly used products
     $product_shuffle = $product->getProductsByCategory('fairly_used');
-
-    // request method post
-    if($_SERVER['REQUEST_METHOD'] == "POST"){
-        if (isset($_POST['fairly_used_submit'])){
-            // call method addToCart
-            $Cart->addToCart($_POST['user_id'], $_POST['item_id']);
-        }
-    }
 ?>
 
 <section id="fairly-used">
@@ -53,12 +45,10 @@
                         <?php
                             if (!isset($_SESSION['user_id'])) {
                                 echo '<a href="auth/login.php" class="btn btn-warning font-size-12">Add to Cart</a>';
+                            } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
+                                echo '<button type="button" disabled class="btn btn-success font-size-12">In the Cart</button>';
                             } else {
-                                echo '<form method="post">
-                                        <input type="hidden" name="item_id" value="'.$item['item_id'].'">
-                                        <input type="hidden" name="user_id" value="'.$_SESSION['user_id'].'">
-                                        <button type="submit" name="fairly_used_submit" class="btn btn-warning font-size-12">Add to Cart</button>
-                                    </form>';
+                                echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-warning font-size-12">Add to Cart</button>';
                             }
                         ?>
                     </div>
