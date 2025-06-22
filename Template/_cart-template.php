@@ -218,4 +218,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Handle order form submission
+document.getElementById('confirm-order-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('confirm-order-btn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+    
+    // Submit form via AJAX
+    fetch('process_order.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new FormData(this)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to WhatsApp
+            window.open(data.whatsapp_url, '_blank');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('orderConfirmationModal'));
+            modal.hide();
+            
+            // Show success message
+            alert('Order confirmed! Redirecting to WhatsApp...');
+            
+            // Optionally redirect to a success page or refresh cart
+            setTimeout(() => {
+                window.location.href = 'cart.php';
+            }, 2000);
+        } else {
+            throw new Error(data.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing order: ' + error.message);
+        
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
 </script>

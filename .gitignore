@@ -1,0 +1,51 @@
+# Uploads directory - contains user-uploaded product images
+assets/uploads/
+assets/uploads/products/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Database files (if any)
+*.sql
+*.db
+
+# Backup files
+*.bak
+*.backup
+
+# Cache files
+cache/
+*.cache
+
+# Session files
+sessions/
+
+# Configuration files with sensitive data
+config.php
+database.php 
