@@ -238,23 +238,43 @@ document.getElementById('confirm-order-form').addEventListener('submit', functio
         },
         body: new FormData(this)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.text(); // Get raw text first
+    })
+    .then(text => {
+        console.log('Raw response:', text);
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            console.error('Raw text that failed to parse:', text);
+            throw new Error('Invalid JSON response from server');
+        }
+    })
     .then(data => {
         if (data.success) {
-            // Redirect to WhatsApp
-            window.open(data.whatsapp_url, '_blank');
-            
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('orderConfirmationModal'));
-            modal.hide();
+            // Close modal immediately using simple DOM manipulation
+            const modalElement = document.getElementById('orderConfirmationModal');
+            if (modalElement) {
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
             
             // Show success message
             alert('Order confirmed! Redirecting to WhatsApp...');
             
-            // Optionally redirect to a success page or refresh cart
-            setTimeout(() => {
-                window.location.href = 'cart.php';
-            }, 2000);
+            // Open WhatsApp immediately
+            window.open(data.whatsapp_url, '_blank');
+            
+            // Refresh cart page to show empty cart
+            window.location.href = 'cart.php';
         } else {
             throw new Error(data.error || 'Unknown error occurred');
         }

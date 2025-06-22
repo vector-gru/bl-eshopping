@@ -106,20 +106,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Return JSON response
         header('Content-Type: application/json');
-        echo json_encode([
+        $response = [
             'success' => true,
             'order_number' => $orderNumber,
             'message' => $message,
             'whatsapp_number' => $whatsapp_number,
             'whatsapp_url' => "https://wa.me/{$whatsapp_number}?text=" . urlencode($message)
-        ]);
+        ];
+        
+        echo json_encode($response);
         exit();
         
     } catch (Exception $e) {
-        if (isset($conn)) {
-            $conn->rollBack();
-        }
-        
         // Clear any output buffer before JSON response
         ob_clean();
         
