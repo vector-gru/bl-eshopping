@@ -101,6 +101,22 @@ button:focus {
     margin-top: 1rem;
 }
 
+/*   Fairly Used Section Template */
+#fairly-used .owl-carousel .item .product a {
+    display: block;
+    padding: 8px;
+    background-color: white;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+#fairly-used .owl-carousel .item .product img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 /*# sourceMappingURL=style.css.map */
 
 /* Banner Carousel Styles */
