@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $conn->beginTransaction();
                     
                     // Insert product
-                    $stmt = $conn->prepare("INSERT INTO product (item_name, item_price, old_price, item_description, item_brand, currency, stock_quantity, is_top_sale, is_special_price, is_new_arrival) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $conn->prepare("INSERT INTO product (item_name, item_price, old_price, item_description, item_brand, currency, stock_quantity, is_top_sale, is_special_price, is_new_arrival, is_fairly_used) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $_POST['item_name'],
                         $_POST['item_price'],
@@ -36,7 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['stock_quantity'],
                         isset($_POST['is_top_sale']) ? 1 : 0,
                         isset($_POST['is_special_price']) ? 1 : 0,
-                        isset($_POST['is_new_arrival']) ? 1 : 0
+                        isset($_POST['is_new_arrival']) ? 1 : 0,
+                        isset($_POST['is_fairly_used']) ? 1 : 0
                     ]);
                     
                     $product_id = $conn->lastInsertId();
@@ -108,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $conn->beginTransaction();
                     
                     // Update product
-                    $stmt = $conn->prepare("UPDATE product SET item_name = ?, item_price = ?, old_price = ?, item_description = ?, item_brand = ?, currency = ?, stock_quantity = ?, is_top_sale = ?, is_special_price = ?, is_new_arrival = ? WHERE item_id = ?");
+                    $stmt = $conn->prepare("UPDATE product SET item_name = ?, item_price = ?, old_price = ?, item_description = ?, item_brand = ?, currency = ?, stock_quantity = ?, is_top_sale = ?, is_special_price = ?, is_new_arrival = ?, is_fairly_used = ? WHERE item_id = ?");
                     $stmt->execute([
                         $_POST['item_name'],
                         $_POST['item_price'],
@@ -120,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         isset($_POST['is_top_sale']) ? 1 : 0,
                         isset($_POST['is_special_price']) ? 1 : 0,
                         isset($_POST['is_new_arrival']) ? 1 : 0,
+                        isset($_POST['is_fairly_used']) ? 1 : 0,
                         $_POST['product_id']
                     ]);
                     
@@ -423,7 +425,10 @@ $products = $conn->query("
                                                 <?php if ($product['is_new_arrival']): ?>
                                                     <span class="badge bg-info">New Arrival</span>
                                                 <?php endif; ?>
-                                                <?php if (!$product['is_top_sale'] && !$product['is_special_price'] && !$product['is_new_arrival']): ?>
+                                                <?php if ($product['is_fairly_used']): ?>
+                                                    <span class="badge bg-secondary">Fairly Used</span>
+                                                <?php endif; ?>
+                                                <?php if (!$product['is_top_sale'] && !$product['is_special_price'] && !$product['is_new_arrival'] && !$product['is_fairly_used']): ?>
                                                     <span class="text-muted small">No categories</span>
                                                 <?php endif; ?>
                                             </div>
@@ -514,6 +519,12 @@ $products = $conn->query("
                                         <input class="form-check-input" type="checkbox" name="is_new_arrival" id="add_new_arrival">
                                         <label class="form-check-label" for="add_new_arrival">
                                             New Arrival
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_fairly_used" id="add_fairly_used">
+                                        <label class="form-check-label" for="add_fairly_used">
+                                            Fairly Used
                                         </label>
                                     </div>
                                 </div>
@@ -641,6 +652,12 @@ $products = $conn->query("
                                         <input class="form-check-input" type="checkbox" name="is_new_arrival" id="edit_is_new_arrival">
                                         <label class="form-check-label" for="edit_is_new_arrival">
                                             New Arrival
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_fairly_used" id="edit_is_fairly_used">
+                                        <label class="form-check-label" for="edit_is_fairly_used">
+                                            Fairly Used
                                         </label>
                                     </div>
                                 </div>
@@ -773,6 +790,7 @@ $products = $conn->query("
                 document.getElementById('edit_is_top_sale').checked = product.is_top_sale == 1;
                 document.getElementById('edit_is_special_price').checked = product.is_special_price == 1;
                 document.getElementById('edit_is_new_arrival').checked = product.is_new_arrival == 1;
+                document.getElementById('edit_is_fairly_used').checked = product.is_fairly_used == 1;
                 
                 // Load current images and sizes
                 loadProductData(product.item_id);

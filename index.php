@@ -26,6 +26,10 @@
     include ('Template/_new-arrivals.php');
     /* !include new-arrivals section */
 
+    /* include fairly-used section */
+    include ('Template/_fairly-used.php');
+    /* !include fairly-used section */
+
     /* include blogs area */
     include ('Template/_blogs.php');
     /* !include blogs area */

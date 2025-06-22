@@ -14,6 +14,10 @@
     include ('Template/_top-sale.php');
     /* !include top-sale section */
 
+    /* include fairly-used section */
+    include ('Template/_fairly-used.php');
+    /* !include fairly-used section */
+
 
 
 ?>

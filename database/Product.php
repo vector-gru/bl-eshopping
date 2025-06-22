@@ -182,6 +182,9 @@ class Product
             case 'new_arrival':
                 $category_column = 'is_new_arrival';
                 break;
+            case 'fairly_used':
+                $category_column = 'is_fairly_used';
+                break;
             default:
                 return array();
         }

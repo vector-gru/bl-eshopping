@@ -53,6 +53,7 @@ try {
         is_top_sale BOOLEAN DEFAULT FALSE,
         is_special_price BOOLEAN DEFAULT FALSE,
         is_new_arrival BOOLEAN DEFAULT FALSE,
+        is_fairly_used BOOLEAN DEFAULT FALSE,
         is_active BOOLEAN DEFAULT TRUE,
         item_register DATETIME DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (item_id)
@@ -86,6 +87,13 @@ try {
     try {
         $conn->exec("ALTER TABLE product ADD COLUMN is_new_arrival BOOLEAN DEFAULT FALSE AFTER is_special_price");
         echo "Added is_new_arrival column to product table\n";
+    } catch (PDOException $e) {
+        // Column might already exist, ignore error
+    }
+    
+    try {
+        $conn->exec("ALTER TABLE product ADD COLUMN is_fairly_used BOOLEAN DEFAULT FALSE AFTER is_new_arrival");
+        echo "Added is_fairly_used column to product table\n";
     } catch (PDOException $e) {
         // Column might already exist, ignore error
     }
