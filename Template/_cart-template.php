@@ -1,7 +1,7 @@
   <!-- Shopping cart section  -->
  <?php
-     global$product;
-     global$Cart;
+     global $product;
+     global $Cart;
 
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
      if (isset($_POST['delete-cart-submit'])){
@@ -26,16 +26,17 @@
                 <?php
                     foreach ($product->getData('cart') as $item) :
                         $cart = $product->getProduct($item['item_id']);
-                        $subTotal[] = array_map(function ($item){
+                        $subTotal[] = array_map(function ($item) use ($product) {
+                            $primary_image = $item['primary_image'] ?? $item['item_image'] ?? "./assets/products/1.png";
                 ?>
                     <!-- cart item -->
                     <div class="row border-top py-3 mt-3">
                         <div class="col-sm-2">
-                            <img src="<?php echo $item['item_image'] ?? "./assets/products/1.png" ?>" style="height: 120px;" alt="cart" class="img-fluid">
+                            <img src="<?php echo $primary_image; ?>" style="height: 120px;" alt="<?php echo htmlspecialchars($item['item_name'] ?? "cart item"); ?>" class="img-fluid">
                         </div>
                         <div class="col-sm-8">
-                            <h5 class="font-baloo font-size-20"><?php echo $item['item_name'] ?? "Unknown"; ?></h5>
-                            <small>by <?php echo $item['item_brand'] ?? "Brand"; ?></small>
+                            <h5 class="font-baloo font-size-20"><?php echo htmlspecialchars($item['item_name'] ?? "Unknown"); ?></h5>
+                            <small>by <?php echo htmlspecialchars($item['item_brand'] ?? "Brand"); ?></small>
                             <!-- product rating -->
                             <div class="d-flex">
                                 <div class="rating text-warning font-size-12">
@@ -73,7 +74,7 @@
 
                         <div class="col-sm-2 text-right">
                             <div class="font-size-20 text-danger font-baloo">
-                                $<span class="product_price" data-id="<?php echo $item['item_id'] ?? '0'; ?>"><?php echo $item['item_price'] ?? 0 ; ?></span>
+                                <?php echo $product->formatPrice($item['item_price'] ?? 0, $item['currency'] ?? 'XAF'); ?>
                             </div>
                         </div>
                     </div>
@@ -91,7 +92,7 @@
                 <div class="sub-total border text-center mt-2">
                     <h6 class="font-size-12 font-rale text-success py-3"><i class="fas fa-check"></i> Your order is eligible for FREE Delivery.</h6>
                     <div class="border-top py-4">
-                        <h5 class="font-baloo font-size-20">Subtotal (<?php echo isset($subTotal) ? count($subTotal) : 0 ; ?> item(s)):&nbsp; <span class="text-danger">$<span class="text-danger" id="deal-price"><?php echo  isset($subTotal)? $Cart->getSum($subTotal) : 0 ?></span> </span> </h5>
+                        <h5 class="font-baloo font-size-20">Subtotal (<?php echo isset($subTotal) ? count($subTotal) : 0 ; ?> item(s)):&nbsp; <span class="text-danger"><?php echo $product->formatPrice(isset($subTotal)? $Cart->getSum($subTotal) : 0, 'XAF'); ?></span> </h5>
                         <button type="button" class="btn btn-warning mt-3" data-bs-toggle="modal" data-bs-target="#orderConfirmationModal" onclick="console.log('Button clicked');">
                             Proceed to Buy
                         </button>
@@ -198,203 +199,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Update modal content
-            const itemsSummary = document.getElementById('order-items-summary');
-            const detailsSummary = document.getElementById('order-details-summary');
-            
-            console.log('Items summary element:', itemsSummary);
-            console.log('Details summary element:', detailsSummary);
-            
-            if (itemsSummary) {
-                if (itemsHtml) {
-                    itemsSummary.innerHTML = itemsHtml;
-                } else {
-                    itemsSummary.innerHTML = '<p class="text-muted">No items in cart</p>';
-                }
-            }
-            
-            if (detailsSummary) {
-                detailsSummary.innerHTML = `
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Items:</span>
-                        <span>${itemCount}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Total:</span>
-                        <strong class="text-danger">${currency} ${totalAmount.toFixed(2)}</strong>
-                    </div>
-                    <hr>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        After confirming, your order will be copied to clipboard for WhatsApp.
-                    </small>
-                `;
-            }
-        });
-    }
-    
-    // Handle order form submission
-    const confirmForm = document.getElementById('confirm-order-form');
-    if (confirmForm) {
-        confirmForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('confirm-order-btn');
-            const originalText = submitBtn.innerHTML;
-            
-            // Show loading state
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-            submitBtn.disabled = true;
-            
-            // Submit form via AJAX
-            fetch('process_order.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(new FormData(this))
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                return response.text(); // Get response as text first
-            })
-            .then(text => {
-                console.log('Raw response:', text);
-                try {
-                    const data = JSON.parse(text);
-                    console.log('Parsed JSON:', data);
-                    
-                    if (data.success) {
-                        // Copy message to clipboard
-                        copyToClipboard(data.message);
-                        
-                        // Show success message
-                        showNotification('Order placed successfully! Order details copied to clipboard.', 'success');
-                        
-                        // Close modal - works with Bootstrap 4 and 5
-                        const modalElement = document.getElementById('orderConfirmationModal');
-                        if (modalElement) {
-                            // Try Bootstrap 5 method first
-                            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                                try {
-                                    const modal = bootstrap.Modal.getInstance(modalElement);
-                                    if (modal) {
-                                        modal.hide();
-                                    } else {
-                                        // If no instance exists, create one and hide it
-                                        const newModal = new bootstrap.Modal(modalElement);
-                                        newModal.hide();
-                                    }
-                                } catch (e) {
-                                    console.log('Bootstrap 5 modal close failed, trying alternative method');
-                                    // Fallback: hide modal manually
-                                    modalElement.classList.remove('show');
-                                    modalElement.style.display = 'none';
-                                    document.body.classList.remove('modal-open');
-                                    const backdrop = document.querySelector('.modal-backdrop');
-                                    if (backdrop) {
-                                        backdrop.remove();
-                                    }
-                                }
-                            } else {
-                                // Fallback for Bootstrap 4 or other versions
-                                modalElement.classList.remove('show');
-                                modalElement.style.display = 'none';
-                                document.body.classList.remove('modal-open');
-                                const backdrop = document.querySelector('.modal-backdrop');
-                                if (backdrop) {
-                                    backdrop.remove();
-                                }
-                            }
-                        }
-                        
-                        // Launch WhatsApp with order details
-                        setTimeout(() => {
-                            window.open(data.whatsapp_url, '_blank');
-                        }, 500);
-                        
-                        // Refresh page after a longer delay to allow WhatsApp to open
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-                        
-                    } else {
-                        throw new Error(data.error || 'Unknown error occurred');
-                    }
-                } catch (parseError) {
-                    console.error('JSON parse error:', parseError);
-                    console.error('Response text:', text);
-                    throw new Error('Invalid server response: ' + text.substring(0, 100));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error placing order: ' + error.message, 'error');
-                
-                // Reset button
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            });
+            document.getElementById('order-items-summary').innerHTML = itemsHtml;
+            document.getElementById('order-details-summary').innerHTML = `
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Items (${itemCount}):</span>
+                    <span>${currency} ${totalAmount.toFixed(2)}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Delivery:</span>
+                    <span class="text-success">FREE</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Total:</span>
+                    <span>${currency} ${totalAmount.toFixed(2)}</span>
+                </div>
+            `;
         });
     }
 });
-
-// Function to copy text to clipboard
-function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-        // Use modern clipboard API
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Text copied to clipboard');
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-            fallbackCopyToClipboard(text);
-        });
-    } else {
-        // Fallback for older browsers
-        fallbackCopyToClipboard(text);
-    }
-}
-
-// Fallback clipboard function
-function fallbackCopyToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-        document.execCommand('copy');
-        console.log('Text copied to clipboard (fallback)');
-    } catch (err) {
-        console.error('Fallback copy failed: ', err);
-    }
-    
-    document.body.removeChild(textArea);
-}
-
-// Function to show notifications
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
-}
 </script>

@@ -24,7 +24,8 @@ class Product
         } else {
             // For products, only get active ones
             $result = $this->db->con->query("SELECT p.*, 
-                (SELECT COUNT(*) FROM product_images WHERE item_id = p.item_id) as image_count 
+                (SELECT COUNT(*) FROM product_images WHERE item_id = p.item_id) as image_count,
+                (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
                 FROM {$table} p 
                 WHERE p.is_active = 1 
                 ORDER BY p.item_register DESC");
@@ -44,7 +45,8 @@ class Product
     public function getProduct($item_id = null, $table = 'product'){
         if (isset($item_id)){
             $result = $this->db->con->query("SELECT p.*, 
-                (SELECT COUNT(*) FROM product_images WHERE item_id = p.item_id) as image_count 
+                (SELECT COUNT(*) FROM product_images WHERE item_id = p.item_id) as image_count,
+                (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
                 FROM {$table} p 
                 WHERE p.item_id = {$item_id}");
 
@@ -62,7 +64,7 @@ class Product
     // Get all product images
     public function getProductImages($item_id){
         if (isset($item_id)){
-            $result = $this->db->con->query("SELECT * FROM product_images WHERE item_id = {$item_id} ORDER BY is_primary DESC");
+            $result = $this->db->con->query("SELECT * FROM product_images WHERE item_id = {$item_id} ORDER BY is_primary DESC, sort_order ASC");
             
             $images = array();
             while ($image = mysqli_fetch_array($result, MYSQLI_ASSOC)){
@@ -86,6 +88,32 @@ class Product
             }
         }
         return null;
+    }
+
+    // Calculate savings amount
+    public function getSavingsAmount($item_id){
+        if (isset($item_id)){
+            $result = $this->db->con->query("SELECT old_price, item_price FROM product WHERE item_id = {$item_id}");
+            if ($product = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+                if ($product['old_price'] && $product['old_price'] > $product['item_price']) {
+                    return $product['old_price'] - $product['item_price'];
+                }
+            }
+        }
+        return 0;
+    }
+
+    // Calculate savings percentage
+    public function getSavingsPercentage($item_id){
+        if (isset($item_id)){
+            $result = $this->db->con->query("SELECT old_price, item_price FROM product WHERE item_id = {$item_id}");
+            if ($product = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+                if ($product['old_price'] && $product['old_price'] > $product['item_price']) {
+                    return round((($product['old_price'] - $product['item_price']) / $product['old_price']) * 100, 0);
+                }
+            }
+        }
+        return 0;
     }
 
     // Format price with currency

@@ -35,39 +35,65 @@ try {
         PRIMARY KEY (id),
         UNIQUE (username),
         UNIQUE (email)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Users table created successfully\n";
     
-    // Create product table (singular as in your SQL)
+    // Create product table with old_price field
     $sql = "CREATE TABLE IF NOT EXISTS product (
         item_id INT(11) NOT NULL AUTO_INCREMENT,
         item_brand VARCHAR(255) NOT NULL,
         item_name VARCHAR(255) NOT NULL,
         item_price DECIMAL(10,2) NOT NULL,
+        old_price DECIMAL(10,2) DEFAULT NULL,
         item_image VARCHAR(255) DEFAULT NULL,
         currency ENUM('XAF', 'USD') DEFAULT 'XAF',
         item_description TEXT,
         stock_quantity INT(11) DEFAULT 0,
         is_active BOOLEAN DEFAULT TRUE,
         item_register DATETIME DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (item_id))
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        PRIMARY KEY (item_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Product table created successfully\n";
+    
+    // Add old_price column if it doesn't exist (for existing databases)
+    try {
+        $conn->exec("ALTER TABLE product ADD COLUMN old_price DECIMAL(10,2) DEFAULT NULL AFTER item_price");
+        echo "Added old_price column to product table\n";
+    } catch (PDOException $e) {
+        // Column might already exist, ignore error
+    }
     
     // Create product_images table
     $sql = "CREATE TABLE IF NOT EXISTS product_images (
         id INT(11) NOT NULL AUTO_INCREMENT,
         item_id INT(11) NOT NULL,
         image_path VARCHAR(255) NOT NULL,
+        image_name VARCHAR(255) NOT NULL,
         is_primary BOOLEAN DEFAULT FALSE,
+        sort_order INT(11) DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
-        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Product images table created successfully\n";
+    
+    // Add new columns to product_images if they don't exist
+    try {
+        $conn->exec("ALTER TABLE product_images ADD COLUMN image_name VARCHAR(255) NOT NULL AFTER image_path");
+        echo "Added image_name column to product_images table\n";
+    } catch (PDOException $e) {
+        // Column might already exist, ignore error
+    }
+    
+    try {
+        $conn->exec("ALTER TABLE product_images ADD COLUMN sort_order INT(11) DEFAULT 0 AFTER is_primary");
+        echo "Added sort_order column to product_images table\n";
+    } catch (PDOException $e) {
+        // Column might already exist, ignore error
+    }
     
     // Create cart table
     $sql = "CREATE TABLE IF NOT EXISTS cart (
@@ -79,8 +105,8 @@ try {
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Cart table created successfully\n";
     
@@ -92,8 +118,8 @@ try {
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Wishlist table created successfully\n";
     
@@ -108,8 +134,8 @@ try {
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Orders table created successfully\n";
     
@@ -123,8 +149,8 @@ try {
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
         FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
-        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE)
-        ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+        FOREIGN KEY (item_id) REFERENCES product (item_id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
     $conn->exec($sql);
     echo "Order items table created successfully\n";
     

@@ -27,16 +27,19 @@ global $Wishlist;
                 <?php
                 foreach ($product->getData('wishlist') as $item) :
                     $cart = $product->getProduct($item['item_id']);
-                    $subTotal[] = array_map(function ($item){
+                    $subTotal[] = array_map(function ($item) use ($product) {
+                        $primary_image = $item['primary_image'] ?? $item['item_image'] ?? "./assets/products/1.png";
+                        $savings_amount = $product->getSavingsAmount($item['item_id']);
+                        $savings_percentage = $product->getSavingsPercentage($item['item_id']);
                         ?>
                         <!-- cart item -->
                         <div class="row border-top py-3 mt-3">
                             <div class="col-sm-2">
-                                <img src="<?php echo $item['item_image'] ?? "./assets/products/1.png" ?>" style="height: 120px;" alt="cart" class="img-fluid">
+                                <img src="<?php echo $primary_image; ?>" style="height: 120px;" alt="<?php echo htmlspecialchars($item['item_name'] ?? "wishlist item"); ?>" class="img-fluid">
                             </div>
                             <div class="col-sm-8">
-                                <h5 class="font-baloo font-size-20"><?php echo $item['item_name'] ?? "Unknown"; ?></h5>
-                                <small>by <?php echo $item['item_brand'] ?? "Brand"; ?></small>
+                                <h5 class="font-baloo font-size-20"><?php echo htmlspecialchars($item['item_name'] ?? "Unknown"); ?></h5>
+                                <small>by <?php echo htmlspecialchars($item['item_brand'] ?? "Brand"); ?></small>
                                 <!-- product rating -->
                                 <div class="d-flex">
                                     <div class="rating text-warning font-size-12">
@@ -71,7 +74,13 @@ global $Wishlist;
 
                             <div class="col-sm-2 text-right">
                                 <div class="font-size-20 text-danger font-baloo">
-                                    $<span class="product_price" data-id="<?php echo $item['item_id'] ?? '0'; ?>"><?php echo $item['item_price'] ?? 0 ; ?></span>
+                                    <?php if ($item['old_price'] && $item['old_price'] > $item['item_price']): ?>
+                                        <div class="text-muted text-decoration-line-through"><?php echo $product->formatPrice($item['old_price'], $item['currency'] ?? 'XAF'); ?></div>
+                                    <?php endif; ?>
+                                    <div><?php echo $product->formatPrice($item['item_price'] ?? 0, $item['currency'] ?? 'XAF'); ?></div>
+                                    <?php if ($savings_amount > 0): ?>
+                                        <small class="text-success">Save <?php echo $product->formatPrice($savings_amount, $item['currency'] ?? 'XAF'); ?></small>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>

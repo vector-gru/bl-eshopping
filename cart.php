@@ -1,5 +1,4 @@
 <?php
-global $product;
 ob_start();
     //include header.php file
     include ('header.php');

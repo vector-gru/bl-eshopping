@@ -36,49 +36,76 @@
 
     foreach ($product->getData() as $item) :
         if ($item['item_id'] == $item_id) :
-
+            // Get all product images
+            $product_images = $product->getProductImages($item_id);
+            $primary_image = $product->getPrimaryImage($item_id) ?: ($product_images[0]['image_path'] ?? "./assets/products/1.png");
+            $savings_amount = $product->getSavingsAmount($item_id);
+            $savings_percentage = $product->getSavingsPercentage($item_id);
 ?>
 
 <section id="product" class="py-3">
     <div class="container">
         <div class="row">
             <div class="col-sm-6">
-                <img src="<?php echo $item['item_image'] ?? "./assets/products/1.png" ?>" alt="product" class="img-fluid">
-                <div class="form-row pt-4 font-size-16 font-baloo">
-                    <div class="col">
-                        <a href="cart.php" class="btn btn-danger btn-block">
+                <!-- Main Product Image -->
+                <div class="main-image-container mb-3">
+                    <img src="<?php echo $primary_image; ?>" alt="<?php echo htmlspecialchars($item['item_name']); ?>" 
+                         class="img-fluid main-product-image" id="main-product-image">
+                </div>
+                
+                <!-- Product Image Thumbnails -->
+                <?php if (count($product_images) > 1): ?>
+                <div class="product-thumbnails mb-3">
+                    <h6 class="font-baloo mb-2">Product Images</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <?php foreach ($product_images as $image): ?>
+                        <div class="thumbnail-container">
+                            <img src="<?php echo $image['image_path']; ?>" 
+                                 alt="<?php echo htmlspecialchars($item['item_name']); ?>"
+                                 class="img-thumbnail product-thumbnail" 
+                                 style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                                 onclick="changeMainImage('<?php echo $image['image_path']; ?>')">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <div class="row pt-4 font-size-16 font-baloo">
+                    <div class="col-md-4 mb-2">
+                        <a href="cart.php" class="btn btn-danger w-100">
                             <i class="fas fa-bolt"></i> Proceed to Buy
                         </a>
                     </div>
-                    <div class="col">
+                    <div class="col-md-4 mb-2">
                         <?php
                         if (!isset($_SESSION['user_id'])) {
-                            echo '<button type="button" disabled class="btn btn-warning btn-block">
+                            echo '<button type="button" disabled class="btn btn-warning w-100">
                                     <i class="fas fa-cart-plus"></i> Login to Add to Cart
                                   </button>';
                         } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
-                            echo '<button type="button" disabled class="btn btn-success btn-block">
+                            echo '<button type="button" disabled class="btn btn-success w-100">
                                     <i class="fas fa-shopping-cart"></i> In Cart
                                   </button>';
                         } else {
-                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-warning btn-block">
+                            echo '<button type="button" onclick="addToCart(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-warning w-100">
                                     <i class="fas fa-cart-plus"></i> Add to Cart
                                   </button>';
                         }
                         ?>
                     </div>
-                    <div class="col">
+                    <div class="col-md-4 mb-2">
                         <?php
                         if (!isset($_SESSION['user_id'])) {
-                            echo '<button type="button" disabled class="btn btn-info btn-block">
+                            echo '<button type="button" disabled class="btn btn-info w-100">
                                     <i class="far fa-heart"></i> Login to Add to Wishlist
                                   </button>';
                         } else if (in_array($item['item_id'], $Wishlist->getWishlistId($product->getData('wishlist')) ?? [])){
-                            echo '<button type="button" disabled class="btn btn-success btn-block">
+                            echo '<button type="button" disabled class="btn btn-success w-100">
                                     <i class="fas fa-heart"></i> In Wishlist
                                   </button>';
                         } else {
-                            echo '<button type="button" onclick="addToWishlist(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-info btn-block">
+                            echo '<button type="button" onclick="addToWishlist(this, '.$item['item_id'].', '.$_SESSION['user_id'].')" class="btn btn-info w-100">
                                         <i class="far fa-heart"></i> Add to Wishlist
                                   </button>';
                         }
@@ -87,8 +114,8 @@
                 </div>
             </div>
             <div class="col-sm-6 py-5">
-                <h5 class="font-baloo font-size-20"><?php echo $item['item_name'] ?? "Unknown"; ?></h5>
-                <small><?php echo $item['item_brand'] ?? "Brand"; ?></small>
+                <h5 class="font-baloo font-size-20"><?php echo htmlspecialchars($item['item_name'] ?? "Unknown"); ?></h5>
+                <small class="text-muted"><?php echo htmlspecialchars($item['item_brand'] ?? "Brand"); ?></small>
                 <div class="d-flex">
                     <div class="rating text-warning font-size-12">
                         <span><i class="fas fa-star"></i></span>
@@ -103,21 +130,33 @@
 
                 <!---    product price       -->
                 <table class="my-3">
+                    <?php if ($item['old_price'] && $item['old_price'] > $item['item_price']): ?>
                     <tr class="font-rale font-size-14">
                         <td>M.R.P:</td>
-                        <td><strike>$162.00</strike></td>
+                        <td><strike><?php echo $product->formatPrice($item['old_price'], $item['currency']); ?></strike></td>
                     </tr>
+                    <?php endif; ?>
                     <tr class="font-rale font-size-14">
                         <td>Deal Price:</td>
-                        <td class="font-size-20 text-danger">$<span><?php echo $item['item_price'] ?? 0; ?></span></td>
-                        <!-- <td class="font-size-20 text-danger">$<span>152.00</span><small class="text-dark font-size-12">&nbsp;&nbsp;Inclusive of all taxes</small></td> -->
+                        <td class="font-size-20 text-danger"><?php echo $product->formatPrice($item['item_price'], $item['currency']); ?></td>
                     </tr>
+                    <?php if ($savings_amount > 0): ?>
                     <tr class="font-rale font-size-14">
                         <td>You Save:</td>
-                        <td><span class="font-size-16 text-danger">$10.00</span></td>
+                        <td><span class="font-size-16 text-danger"><?php echo $product->formatPrice($savings_amount, $item['currency']); ?> (<?php echo $savings_percentage; ?>% off)</span></td>
                     </tr>
+                    <?php endif; ?>
                 </table>
                 <!---    !product price       -->
+
+                <!-- Stock Status -->
+                <div class="mb-3">
+                    <?php if ($item['stock_quantity'] > 0): ?>
+                        <span class="badge bg-success">In Stock (<?php echo $item['stock_quantity']; ?> available)</span>
+                    <?php else: ?>
+                        <span class="badge bg-danger">Out of Stock</span>
+                    <?php endif; ?>
+                </div>
 
                 <!--    #policy -->
                 <div id="policy">
@@ -196,19 +235,43 @@
                     </div>
                 </div>
                 <!-- !size -->
-
-
             </div>
 
             <div class="col-12">
                 <h6 class="font-rubik">Product Description</h6>
                 <hr>
-                <p class="font-rale font-size-14">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Repellat inventore vero numquam error est ipsa, consequuntur temporibus debitis nobis sit, delectus officia ducimus dolorum sed corrupti. Sapiente optio sunt provident, accusantium eligendi eius reiciendis animi? Laboriosam, optio qui? Numquam, quo fuga. Maiores minus, accusantium velit numquam a aliquam vitae vel?</p>
-                <p class="font-rale font-size-14">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Repellat inventore vero numquam error est ipsa, consequuntur temporibus debitis nobis sit, delectus officia ducimus dolorum sed corrupti. Sapiente optio sunt provident, accusantium eligendi eius reiciendis animi? Laboriosam, optio qui? Numquam, quo fuga. Maiores minus, accusantium velit numquam a aliquam vitae vel?</p>
+                <?php if ($item['item_description']): ?>
+                    <p class="font-rale font-size-14"><?php echo nl2br(htmlspecialchars($item['item_description'])); ?></p>
+                <?php else: ?>
+                    <p class="font-rale font-size-14">No description available for this product.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+function changeMainImage(imagePath) {
+    document.getElementById('main-product-image').src = imagePath;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.product-thumbnail').forEach(thumb => {
+        thumb.classList.remove('border-primary');
+        if (thumb.src.includes(imagePath)) {
+            thumb.classList.add('border-primary');
+        }
+    });
+}
+
+// Set first thumbnail as active on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const firstThumbnail = document.querySelector('.product-thumbnail');
+    if (firstThumbnail) {
+        firstThumbnail.classList.add('border-primary');
+    }
+});
+</script>
+
 <!--   !product  -->
 
 <?php

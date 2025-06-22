@@ -33,6 +33,9 @@
     //Wishlist object
     $Wishlist = new Wishlist($db);
 
+    // Make objects globally available
+    global $product, $Cart, $Wishlist, $product_shuffle;
+
 function isAdmin() {
     try {
         if (!isset($_SESSION['user_id'])) {
