@@ -25,12 +25,11 @@
             <div class="col-sm-9">
                 <?php
                     foreach ($product->getData('cart') as $item) :
-                        $cart = $product->getProduct($item['item_id']);
-                        $subTotal[] = array_map(function ($item) use ($product) {
-                            $primary_image = $item['primary_image'] ?? $item['item_image'] ?? "./assets/products/1.png";
+                        $subTotal[] = ($item['item_price'] ?? 0) * ($item['quantity'] ?? 1);
+                        $primary_image = $item['primary_image'] ?? $item['item_image'] ?? "./assets/products/1.png";
                 ?>
                     <!-- cart item -->
-                    <div class="row border-top py-3 mt-3">
+                    <div class="row border-top py-3 mt-3" id="cart-item-<?php echo $item['item_id']; ?>">
                         <div class="col-sm-2">
                             <img src="<?php echo $primary_image; ?>" style="height: 120px;" alt="<?php echo htmlspecialchars($item['item_name'] ?? "cart item"); ?>" class="img-fluid">
                         </div>
@@ -54,7 +53,7 @@
                             <div class="qty d-flex pt-2">
                                 <div class="d-flex font-rale w-25">
                                     <button class="qty-up border bg-light" data-id="<?php echo $item['item_id'] ?? '0'; ?>"><i class="fas fa-angle-up"></i></button>
-                                    <input type="text" data-id="<?php echo $item['item_id'] ?? '0'; ?>" class="qty_input border px-2 w-100 bg-light" disabled value="1" placeholder="1">
+                                    <input type="text" data-id="<?php echo $item['item_id'] ?? '0'; ?>" class="qty_input border px-2 w-100 bg-light" disabled value="<?php echo $item['quantity'] ?? 1; ?>" placeholder="1">
                                     <button data-id="<?php echo $item['item_id'] ?? '0'; ?>" class="qty-down border bg-light"><i class="fas fa-angle-down"></i></button>
                                 </div>
                                 <form method="post">
@@ -73,15 +72,13 @@
                         </div>
 
                         <div class="col-sm-2 text-right">
-                            <div class="font-size-20 text-danger font-baloo">
-                                <?php echo $product->formatPrice($item['item_price'] ?? 0, $item['currency'] ?? 'XAF'); ?>
+                            <div class="font-size-20 text-danger font-baloo item-total" data-id="<?php echo $item['item_id']; ?>">
+                                <?php echo $product->formatPrice(($item['item_price'] ?? 0) * ($item['quantity'] ?? 1), $item['currency'] ?? 'XAF'); ?>
                             </div>
                         </div>
                     </div>
                     <!-- !cart item -->
                 <?php
-                        return $item['item_price'];
-                    },$cart); // closing array_map function
                 endforeach;
 
                 ?>
@@ -90,9 +87,9 @@
             <!-- subtotal section-->
             <div class="col-sm-3">
                 <div class="sub-total border text-center mt-2">
-                    <h6 class="font-size-12 font-rale text-success py-3"><i class="fas fa-check"></i> Your order is eligible for FREE Delivery.</h6>
+                    <h6 class="font-size-12 font-rale text-success py-3"><i class="fas fa-check"></i> Your order is eligible for FREE Delivery in Bafoussam. Delivery out of Bafoussam will be determined by means of delivery. </h6>
                     <div class="border-top py-4">
-                        <h5 class="font-baloo font-size-20">Subtotal (<?php echo isset($subTotal) ? count($subTotal) : 0 ; ?> item(s)):&nbsp; <span class="text-danger"><?php echo $product->formatPrice(isset($subTotal)? $Cart->getSum($subTotal) : 0, 'XAF'); ?></span> </h5>
+                        <h5 class="font-baloo font-size-20">Subtotal (<?php echo isset($subTotal) ? count($subTotal) : 0 ; ?> item(s)):&nbsp; <span class="text-danger" id="cart-subtotal"><?php echo $product->formatPrice(isset($subTotal)? $Cart->getSum($subTotal) : 0, 'XAF'); ?></span> </h5>
                         <button type="button" class="btn btn-warning mt-3" data-bs-toggle="modal" data-bs-target="#orderConfirmationModal" onclick="console.log('Button clicked');">
                             Proceed to Buy
                         </button>
@@ -146,75 +143,164 @@
 </div>
 
 <script>
-// Handle order confirmation modal
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded');
-    const modal = document.getElementById('orderConfirmationModal');
-    console.log('Modal element:', modal);
-    
-    if (modal) {
-        modal.addEventListener('show.bs.modal', function () {
-            console.log('Modal show event triggered');
-            // Get cart data from PHP
-            const cartItems = <?php 
-                $cartData = $product->getData('cart');
-                echo json_encode($cartData ?: []); 
-            ?>;
-            const products = <?php 
-                $productData = $product->getData('product');
-                echo json_encode($productData ?: []); 
-            ?>;
-            
-            console.log('Cart items:', cartItems);
-            console.log('Products:', products);
-            
-            let itemsHtml = '';
-            let totalAmount = 0;
-            let itemCount = 0;
-            let currency = 'XAF';
-            
-            if (cartItems && cartItems.length > 0) {
-                cartItems.forEach(cartItem => {
-                    const product = products.find(p => p.item_id == cartItem.item_id);
-                    if (product) {
-                        const itemTotal = parseFloat(product.item_price) * parseInt(cartItem.quantity);
+// Global function to update order modal with current cart data
+function updateOrderModal() {
+    fetch('Template/get-cart-data.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const cartItems = data.cart_items;
+                let itemsHtml = '';
+                let totalAmount = 0;
+                let itemCount = 0;
+                let currency = 'XAF';
+                
+                if (cartItems && cartItems.length > 0) {
+                    cartItems.forEach(cartItem => {
+                        const itemTotal = parseFloat(cartItem.item_price) * parseInt(cartItem.quantity);
                         totalAmount += itemTotal;
                         itemCount += parseInt(cartItem.quantity);
-                        currency = product.currency || 'XAF';
+                        currency = cartItem.currency || 'XAF';
                         
                         itemsHtml += `
                             <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
                                 <div>
-                                    <strong>${product.item_name || 'Unknown Product'}</strong><br>
+                                    <strong>${cartItem.item_name || 'Unknown Product'}</strong><br>
                                     <small class="text-muted">Qty: ${cartItem.quantity}</small>
                                 </div>
                                 <div class="text-end">
                                     <strong>${currency} ${itemTotal.toFixed(2)}</strong><br>
-                                    <small class="text-muted">${currency} ${parseFloat(product.item_price).toFixed(2)} each</small>
+                                    <small class="text-muted">${currency} ${parseFloat(cartItem.item_price).toFixed(2)} each</small>
                                 </div>
                             </div>
                         `;
-                    }
-                });
+                    });
+                }
+                
+                // Update modal content
+                const orderItemsSummary = document.getElementById('order-items-summary');
+                const orderDetailsSummary = document.getElementById('order-details-summary');
+                
+                if (orderItemsSummary) {
+                    orderItemsSummary.innerHTML = itemsHtml;
+                }
+                
+                if (orderDetailsSummary) {
+                    orderDetailsSummary.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Items (${itemCount}):</span>
+                            <span>${currency} ${totalAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Delivery:</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total:</span>
+                            <span>${currency} ${totalAmount.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                console.error('Failed to fetch cart data:', data.message);
             }
-            
-            // Update modal content
-            document.getElementById('order-items-summary').innerHTML = itemsHtml;
-            document.getElementById('order-details-summary').innerHTML = `
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Items (${itemCount}):</span>
-                    <span>${currency} ${totalAmount.toFixed(2)}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Delivery:</span>
-                    <span class="text-success">FREE</span>
-                </div>
-                <hr>
-                <div class="d-flex justify-content-between fw-bold">
-                    <span>Total:</span>
-                    <span>${currency} ${totalAmount.toFixed(2)}</span>
-                </div>
-            `;
+        })
+        .catch(error => {
+            console.error('Error fetching cart data:', error);
+        });
+}
+
+// Cart quantity functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle quantity up button
+    document.querySelectorAll('.qty-up').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            updateQuantity(itemId, 'increase');
+        });
+    });
+
+    // Handle quantity down button
+    document.querySelectorAll('.qty-down').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            updateQuantity(itemId, 'decrease');
+        });
+    });
+
+    function updateQuantity(itemId, action) {
+        const formData = new FormData();
+        formData.append('item_id', itemId);
+        formData.append('action', action);
+
+        fetch('Template/ajax-cart-quantity.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.removed) {
+                    // Item was removed from cart
+                    const cartItem = document.getElementById(`cart-item-${itemId}`);
+                    if (cartItem) {
+                        cartItem.remove();
+                    }
+                    // Refresh page to update cart count and subtotal
+                    location.reload();
+                } else {
+                    // Update quantity input
+                    const qtyInput = document.querySelector(`.qty_input[data-id="${itemId}"]`);
+                    if (qtyInput) {
+                        qtyInput.value = data.quantity;
+                    }
+
+                    // Update item total
+                    const itemTotal = document.querySelector(`.item-total[data-id="${itemId}"]`);
+                    if (itemTotal) {
+                        const currency = data.currency || 'XAF';
+                        const formattedPrice = currency === 'USD' ? 
+                            '$' + parseFloat(data.item_total).toFixed(2) : 
+                            parseFloat(data.item_total).toFixed(2) + ' XAF';
+                        itemTotal.textContent = formattedPrice;
+                    }
+
+                    // Update cart subtotal
+                    const cartSubtotal = document.getElementById('cart-subtotal');
+                    if (cartSubtotal) {
+                        const currency = data.currency || 'XAF';
+                        const formattedTotal = currency === 'USD' ? 
+                            '$' + parseFloat(data.cart_total).toFixed(2) : 
+                            parseFloat(data.cart_total).toFixed(2) + ' XAF';
+                        cartSubtotal.textContent = formattedTotal;
+                    }
+                    
+                    // Update order modal if it's open
+                    const modal = document.getElementById('orderConfirmationModal');
+                    if (modal && modal.classList.contains('show')) {
+                        updateOrderModal();
+                    }
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating quantity');
+        });
+    }
+});
+
+// Handle order confirmation modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('orderConfirmationModal');
+    
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function () {
+            // Update modal with current cart data
+            updateOrderModal();
         });
     }
 });

@@ -49,7 +49,19 @@ class Cart
             $query = "SELECT * FROM cart WHERE user_id = {$userid} AND item_id = {$itemid}";
             $result = $this->db->con->query($query);
             if ($result && mysqli_num_rows($result) > 0) {
-                return true; // Item already in cart
+                // Item already in cart, increase quantity
+                $cart_item = mysqli_fetch_array($result, MYSQLI_ASSOC);
+                $current_quantity = (int)$cart_item['quantity'];
+                $new_quantity = $current_quantity + 1;
+                
+                // Update quantity (max 10)
+                if ($new_quantity <= 10) {
+                    $update_query = "UPDATE cart SET quantity = {$new_quantity} WHERE user_id = {$userid} AND item_id = {$itemid}";
+                    $update_result = $this->db->con->query($update_query);
+                    return $update_result;
+                } else {
+                    return true; // Already at max quantity
+                }
             }
             
             $params = array(
@@ -84,7 +96,11 @@ class Cart
         if(isset($arr)){
             $sum = 0;
             foreach ($arr as $item){
-                $sum += floatval($item[0]);
+                if (is_array($item)) {
+                    $sum += floatval($item[0]);
+                } else {
+                    $sum += floatval($item);
+                }
             }
             return sprintf('%.2f' , $sum);
         }

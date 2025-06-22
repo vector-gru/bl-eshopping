@@ -20,7 +20,20 @@ class Product
                 return array(); // Return empty array if user is not logged in
             }
             $user_id = $_SESSION['user_id'];
-            $result = $this->db->con->query("SELECT * FROM {$table} WHERE user_id = {$user_id}");
+            
+            if ($table == 'cart') {
+                // Join cart with product data to get complete information
+                $result = $this->db->con->query("
+                    SELECT c.*, p.item_name, p.item_price, p.item_brand, p.currency,
+                        (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
+                    FROM cart c 
+                    JOIN product p ON c.item_id = p.item_id 
+                    WHERE c.user_id = {$user_id}
+                ");
+            } else {
+                // For wishlist, just get the basic data
+                $result = $this->db->con->query("SELECT * FROM {$table} WHERE user_id = {$user_id}");
+            }
         } else {
             // For products, only get active ones
             $result = $this->db->con->query("SELECT p.*, 
