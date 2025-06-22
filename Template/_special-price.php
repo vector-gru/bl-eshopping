@@ -3,7 +3,8 @@
     global $product;
     global $Cart;
 
-    $product_shuffle = $product->getData();
+    // Get only special price products
+    $product_shuffle = $product->getProductsByCategory('special_price');
 
     $brand = array_map(function ($pro){ return $pro['item_brand']; }, $product_shuffle);
     $unique = array_unique($brand);

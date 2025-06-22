@@ -41,6 +41,8 @@
             $primary_image = $product->getPrimaryImage($item_id) ?: ($product_images[0]['image_path'] ?? "./assets/products/1.png");
             $savings_amount = $product->getSavingsAmount($item_id);
             $savings_percentage = $product->getSavingsPercentage($item_id);
+            // Get product sizes
+            $product_sizes = $product->getProductSizes($item_id);
 ?>
 
 <section id="product" class="py-3">
@@ -230,16 +232,18 @@
                 <!-- size -->
                 <div class="size my-3">
                     <h6 class="font-baloo">Size :</h6>
-                    <div class="d-flex justify-content-between w-75">
-                        <div class="font-rubik border p-2">
-                            <button class="btn p-0 font-size-14">128GB ROM</button>
-                        </div>
-                        <div class="font-rubik border p-2">
-                            <button class="btn p-0 font-size-14">6GB RAM</button>
-                        </div>
-                        <div class="font-rubik border p-2">
-                            <button class="btn p-0 font-size-14">8GB RAM</button>
-                        </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <?php if (!empty($product_sizes)): ?>
+                            <?php foreach ($product_sizes as $size): ?>
+                            <div class="font-rubik border p-2 rounded">
+                                <button class="btn p-0 font-size-14"><?php echo htmlspecialchars($size['size_name'] . ': ' . $size['size_value']); ?></button>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="font-rubik border p-2 rounded">
+                                <span class="text-muted font-size-14">No sizes available</span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <!-- !size -->

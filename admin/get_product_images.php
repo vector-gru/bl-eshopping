@@ -15,21 +15,26 @@ require_once '../database/db_connect.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_GET['product_id'])) {
-    echo json_encode(['error' => 'Product ID is required']);
-    exit;
-}
-
-$conn = getDBConnection();
-$product_id = (int)$_GET['product_id'];
-
-try {
-    $stmt = $conn->prepare("SELECT id, image_path, image_name, is_primary, sort_order FROM product_images WHERE item_id = ? ORDER BY is_primary DESC, sort_order ASC");
+if (isset($_GET['product_id'])) {
+    $product_id = (int)$_GET['product_id'];
+    
+    // Get product images
+    $conn = getDBConnection();
+    $stmt = $conn->prepare("SELECT * FROM product_images WHERE item_id = ? ORDER BY is_primary DESC, sort_order ASC");
     $stmt->execute([$product_id]);
     $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    echo json_encode($images);
-} catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    // Get product sizes
+    $stmt = $conn->prepare("SELECT * FROM product_sizes WHERE item_id = ? ORDER BY sort_order ASC");
+    $stmt->execute([$product_id]);
+    $sizes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Return both images and sizes
+    echo json_encode([
+        'images' => $images,
+        'sizes' => $sizes
+    ]);
+} else {
+    echo json_encode(['error' => 'Product ID not provided']);
 }
 ?> 

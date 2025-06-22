@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $conn->beginTransaction();
                     
                     // Insert product
-                    $stmt = $conn->prepare("INSERT INTO product (item_name, item_price, old_price, item_description, item_brand, currency, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $conn->prepare("INSERT INTO product (item_name, item_price, old_price, item_description, item_brand, currency, stock_quantity, is_top_sale, is_special_price, is_new_arrival) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $_POST['item_name'],
                         $_POST['item_price'],
@@ -33,7 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['item_description'],
                         $_POST['item_brand'],
                         $_POST['currency'],
-                        $_POST['stock_quantity']
+                        $_POST['stock_quantity'],
+                        isset($_POST['is_top_sale']) ? 1 : 0,
+                        isset($_POST['is_special_price']) ? 1 : 0,
+                        isset($_POST['is_new_arrival']) ? 1 : 0
                     ]);
                     
                     $product_id = $conn->lastInsertId();
@@ -77,6 +80,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     
+                    // Handle product sizes
+                    if (isset($_POST['sizes']) && is_array($_POST['sizes'])) {
+                        foreach ($_POST['sizes'] as $index => $size) {
+                            if (!empty($size['name']) && !empty($size['value'])) {
+                                $stmt = $conn->prepare("INSERT INTO product_sizes (item_id, size_name, size_value, sort_order) VALUES (?, ?, ?, ?)");
+                                $stmt->execute([
+                                    $product_id,
+                                    $size['name'],
+                                    $size['value'],
+                                    $index
+                                ]);
+                            }
+                        }
+                    }
+                    
                     $conn->commit();
                     $message = "Product added successfully!";
                 } catch (PDOException $e) {
@@ -90,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $conn->beginTransaction();
                     
                     // Update product
-                    $stmt = $conn->prepare("UPDATE product SET item_name = ?, item_price = ?, old_price = ?, item_description = ?, item_brand = ?, currency = ?, stock_quantity = ? WHERE item_id = ?");
+                    $stmt = $conn->prepare("UPDATE product SET item_name = ?, item_price = ?, old_price = ?, item_description = ?, item_brand = ?, currency = ?, stock_quantity = ?, is_top_sale = ?, is_special_price = ?, is_new_arrival = ? WHERE item_id = ?");
                     $stmt->execute([
                         $_POST['item_name'],
                         $_POST['item_price'],
@@ -99,6 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['item_brand'],
                         $_POST['currency'],
                         $_POST['stock_quantity'],
+                        isset($_POST['is_top_sale']) ? 1 : 0,
+                        isset($_POST['is_special_price']) ? 1 : 0,
+                        isset($_POST['is_new_arrival']) ? 1 : 0,
                         $_POST['product_id']
                     ]);
                     
@@ -140,6 +161,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     
+                    // Handle product sizes
+                    if (isset($_POST['sizes']) && is_array($_POST['sizes'])) {
+                        // Delete existing sizes
+                        $stmt = $conn->prepare("DELETE FROM product_sizes WHERE item_id = ?");
+                        $stmt->execute([$_POST['product_id']]);
+                        
+                        // Add new sizes
+                        foreach ($_POST['sizes'] as $index => $size) {
+                            if (!empty($size['name']) && !empty($size['value'])) {
+                                $stmt = $conn->prepare("INSERT INTO product_sizes (item_id, size_name, size_value, sort_order) VALUES (?, ?, ?, ?)");
+                                $stmt->execute([
+                                    $_POST['product_id'],
+                                    $size['name'],
+                                    $size['value'],
+                                    $index
+                                ]);
+                            }
+                        }
+                    }
+                    
                     $conn->commit();
                     $message = "Product updated successfully!";
                 } catch (PDOException $e) {
@@ -164,6 +205,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             unlink($file_path);
                         }
                     }
+                    
+                    // Delete product sizes
+                    $stmt = $conn->prepare("DELETE FROM product_sizes WHERE item_id = ?");
+                    $stmt->execute([$_POST['product_id']]);
                     
                     // Delete product (cascades to product_images)
                     $stmt = $conn->prepare("DELETE FROM product WHERE item_id = ?");
@@ -200,6 +245,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = "Error deleting image: " . $e->getMessage();
                 }
                 break;
+                
+            case 'delete_size':
+                try {
+                    $stmt = $conn->prepare("DELETE FROM product_sizes WHERE id = ?");
+                    $stmt->execute([$_POST['size_id']]);
+                    
+                    $message = "Size deleted successfully!";
+                } catch (PDOException $e) {
+                    $message = "Error deleting size: " . $e->getMessage();
+                }
+                break;
         }
     }
 }
@@ -208,7 +264,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $products = $conn->query("
     SELECT p.*, 
            (SELECT COUNT(*) FROM product_images WHERE item_id = p.item_id) as image_count,
-           (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
+           (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image,
+           (SELECT COUNT(*) FROM product_sizes WHERE item_id = p.item_id) as size_count
     FROM product p 
     ORDER BY p.item_register DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -322,6 +379,8 @@ $products = $conn->query("
                                         <th>Brand</th>
                                         <th>Price</th>
                                         <th>Stock</th>
+                                        <th>Categories</th>
+                                        <th>Sizes</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -352,6 +411,25 @@ $products = $conn->query("
                                             <span class="badge <?php echo $product['stock_quantity'] > 0 ? 'bg-success' : 'bg-danger'; ?>">
                                                 <?php echo $product['stock_quantity']; ?>
                                             </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                <?php if ($product['is_top_sale']): ?>
+                                                    <span class="badge bg-warning text-dark">Top Sale</span>
+                                                <?php endif; ?>
+                                                <?php if ($product['is_special_price']): ?>
+                                                    <span class="badge bg-danger">Special Price</span>
+                                                <?php endif; ?>
+                                                <?php if ($product['is_new_arrival']): ?>
+                                                    <span class="badge bg-info">New Arrival</span>
+                                                <?php endif; ?>
+                                                <?php if (!$product['is_top_sale'] && !$product['is_special_price'] && !$product['is_new_arrival']): ?>
+                                                    <span class="text-muted small">No categories</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary"><?php echo $product['size_count']; ?> sizes</span>
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-primary edit-product" 
@@ -418,6 +496,27 @@ $products = $conn->query("
                                     <label class="form-label">Stock Quantity *</label>
                                     <input type="number" class="form-control" name="stock_quantity" value="0" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Categories</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_top_sale" id="add_top_sale">
+                                        <label class="form-check-label" for="add_top_sale">
+                                            Top Sale
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_special_price" id="add_special_price">
+                                        <label class="form-check-label" for="add_special_price">
+                                            Special Price
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_new_arrival" id="add_new_arrival">
+                                        <label class="form-check-label" for="add_new_arrival">
+                                            New Arrival
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -430,6 +529,29 @@ $products = $conn->query("
                                     <textarea class="form-control" name="item_description" rows="8" required></textarea>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Product Sizes -->
+                        <div class="mb-3">
+                            <label class="form-label">Product Sizes (Optional)</label>
+                            <div id="sizes-container">
+                                <div class="row size-row mb-2">
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" name="sizes[0][name]" placeholder="Size Name (e.g., Storage, RAM, Color)">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" name="sizes[0][value]" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger btn-sm remove-size" style="display: none;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="add-size-btn">
+                                <i class="fas fa-plus"></i> Add Size
+                            </button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -481,6 +603,27 @@ $products = $conn->query("
                                     <label class="form-label">Stock Quantity *</label>
                                     <input type="number" class="form-control" name="stock_quantity" id="edit_stock_quantity" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Categories</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_top_sale" id="edit_is_top_sale">
+                                        <label class="form-check-label" for="edit_is_top_sale">
+                                            Top Sale
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_special_price" id="edit_is_special_price">
+                                        <label class="form-check-label" for="edit_is_special_price">
+                                            Special Price
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_new_arrival" id="edit_is_new_arrival">
+                                        <label class="form-check-label" for="edit_is_new_arrival">
+                                            New Arrival
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -501,6 +644,17 @@ $products = $conn->query("
                             <div id="current-images-container" class="image-preview-container">
                                 <!-- Images will be loaded here via JavaScript -->
                             </div>
+                        </div>
+                        
+                        <!-- Product Sizes -->
+                        <div class="mb-3">
+                            <label class="form-label">Product Sizes</label>
+                            <div id="edit-sizes-container">
+                                <!-- Sizes will be loaded here via JavaScript -->
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="edit-add-size-btn">
+                                <i class="fas fa-plus"></i> Add Size
+                            </button>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -527,34 +681,121 @@ $products = $conn->query("
                 document.getElementById('edit_stock_quantity').value = product.stock_quantity;
                 document.getElementById('edit_currency').value = product.currency;
                 
-                // Load current images
-                loadProductImages(product.item_id);
+                // Set category checkboxes
+                document.getElementById('edit_is_top_sale').checked = product.is_top_sale == 1;
+                document.getElementById('edit_is_special_price').checked = product.is_special_price == 1;
+                document.getElementById('edit_is_new_arrival').checked = product.is_new_arrival == 1;
+                
+                // Load current images and sizes
+                loadProductData(product.item_id);
             });
         });
         
-        // Load product images for edit modal
-        function loadProductImages(productId) {
+        // Load product images and sizes for edit modal
+        function loadProductData(productId) {
             fetch(`get_product_images.php?product_id=${productId}`)
                 .then(response => response.json())
                 .then(data => {
-                    const container = document.getElementById('current-images-container');
-                    container.innerHTML = '';
+                    // Load images
+                    const imageContainer = document.getElementById('current-images-container');
+                    imageContainer.innerHTML = '';
                     
-                    data.forEach(image => {
-                        const imageDiv = document.createElement('div');
-                        imageDiv.className = 'position-relative';
-                        imageDiv.innerHTML = `
-                            <img src="../${image.image_path}" alt="${image.image_name}" class="image-preview">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
-                                    onclick="deleteImage(${image.id})" style="margin: 2px;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        `;
-                        container.appendChild(imageDiv);
-                    });
+                    if (data.images && data.images.length > 0) {
+                        data.images.forEach(image => {
+                            const imageDiv = document.createElement('div');
+                            imageDiv.className = 'position-relative';
+                            imageDiv.innerHTML = `
+                                <img src="../${image.image_path}" alt="${image.image_name}" class="image-preview">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
+                                        onclick="deleteImage(${image.id})" style="margin: 2px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            imageContainer.appendChild(imageDiv);
+                        });
+                    } else {
+                        imageContainer.innerHTML = '<p class="text-muted">No images uploaded</p>';
+                    }
+                    
+                    // Load sizes
+                    const sizeContainer = document.getElementById('edit-sizes-container');
+                    sizeContainer.innerHTML = '';
+                    
+                    if (data.sizes && data.sizes.length > 0) {
+                        data.sizes.forEach((size, index) => {
+                            addSizeRow(sizeContainer, size.size_name, size.size_value, size.id);
+                        });
+                    } else {
+                        addSizeRow(sizeContainer, '', '', null);
+                    }
                 })
-                .catch(error => console.error('Error loading images:', error));
+                .catch(error => console.error('Error loading product data:', error));
         }
+        
+        // Add size row function
+        function addSizeRow(container, name = '', value = '', sizeId = null) {
+            const sizeIndex = container.children.length;
+            const sizeRow = document.createElement('div');
+            sizeRow.className = 'row size-row mb-2';
+            sizeRow.innerHTML = `
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="sizes[${sizeIndex}][name]" value="${name}" placeholder="Size Name (e.g., Storage, RAM, Color)">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="sizes[${sizeIndex}][value]" value="${value}" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-size" onclick="removeSize(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(sizeRow);
+        }
+        
+        // Remove size row function
+        function removeSize(button) {
+            button.closest('.size-row').remove();
+            // Reindex the remaining size rows
+            const container = document.getElementById('edit-sizes-container');
+            container.querySelectorAll('.size-row').forEach((row, index) => {
+                row.querySelectorAll('input').forEach(input => {
+                    const name = input.name;
+                    if (name.includes('[name]')) {
+                        input.name = `sizes[${index}][name]`;
+                    } else if (name.includes('[value]')) {
+                        input.name = `sizes[${index}][value]`;
+                    }
+                });
+            });
+        }
+        
+        // Add size button handlers
+        document.getElementById('add-size-btn').addEventListener('click', function() {
+            const container = document.getElementById('sizes-container');
+            const sizeIndex = container.children.length;
+            const sizeRow = document.createElement('div');
+            sizeRow.className = 'row size-row mb-2';
+            sizeRow.innerHTML = `
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="sizes[${sizeIndex}][name]" placeholder="Size Name (e.g., Storage, RAM, Color)">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="sizes[${sizeIndex}][value]" placeholder="Size Value (e.g., 128GB, 6GB, Black)">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-size" onclick="removeSize(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(sizeRow);
+        });
+        
+        document.getElementById('edit-add-size-btn').addEventListener('click', function() {
+            const container = document.getElementById('edit-sizes-container');
+            addSizeRow(container);
+        });
         
         // Delete image
         function deleteImage(imageId) {

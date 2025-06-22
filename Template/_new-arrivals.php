@@ -4,9 +4,8 @@
     global $product;
     global $Cart;
 
-    $product_shuffle = $product->getData();
-
-    shuffle($product_shuffle);
+    // Get only new arrival products
+    $product_shuffle = $product->getProductsByCategory('new_arrival');
 
     // request method post
     if($_SERVER['REQUEST_METHOD'] == "POST"){

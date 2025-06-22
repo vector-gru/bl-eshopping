@@ -3,7 +3,8 @@
     global $product;
     global $Cart;
 
-    shuffle($product_shuffle);
+    // Get only top sale products
+    $product_shuffle = $product->getProductsByCategory('top_sale');
 
     // request method post
     if($_SERVER['REQUEST_METHOD'] == "POST"){
