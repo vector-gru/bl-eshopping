@@ -115,7 +115,12 @@ $orderCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 p-4">
-                <h2 class="mb-4">Dashboard</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Dashboard</h2>
+                    <a href="../index.php" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Home
+                    </a>
+                </div>
                 
                 <!-- Stats Cards -->
                 <div class="row mb-4">
@@ -193,16 +198,22 @@ $orderCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
                             </div>
                             <div class="card-body">
                                 <?php
-                                $stmt = $conn->query("SELECT * FROM product ORDER BY item_register DESC LIMIT 5");
+                                $stmt = $conn->query("SELECT p.*, 
+                                    (SELECT image_path FROM product_images WHERE item_id = p.item_id AND is_primary = 1 LIMIT 1) as primary_image
+                                    FROM product p 
+                                    ORDER BY p.item_register DESC LIMIT 5");
                                 $recentProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 
                                 if (count($recentProducts) > 0):
                                     foreach ($recentProducts as $product):
+                                        // Set default image if no primary image exists
+                                        $imagePath = $product['primary_image'] ? '../' . $product['primary_image'] : '../assets/products/1.png';
                                 ?>
                                     <div class="d-flex align-items-center mb-3">
-                                        <img src="<?php echo htmlspecialchars($product['item_image']); ?>" 
+                                        <img src="<?php echo htmlspecialchars($imagePath); ?>" 
                                              alt="<?php echo htmlspecialchars($product['item_name']); ?>"
-                                             class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                             class="rounded" style="width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.src='../assets/products/1.png'">
                                         <div class="ms-3">
                                             <h6 class="mb-0"><?php echo htmlspecialchars($product['item_name']); ?></h6>
                                             <small class="text-muted">
