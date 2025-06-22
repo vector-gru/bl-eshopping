@@ -73,16 +73,24 @@
                 
                 <div class="row pt-4 font-size-16 font-baloo">
                     <div class="col-md-4 mb-2">
-                        <a href="cart.php" class="btn btn-danger w-100">
-                            <i class="fas fa-bolt"></i> Proceed to Buy
-                        </a>
+                        <?php
+                        if (!isset($_SESSION['user_id'])) {
+                            echo '<a href="auth/login.php" class="btn btn-danger w-100">
+                                    <i class="fas fa-bolt"></i> Proceed to Buy
+                                  </a>';
+                        } else {
+                            echo '<a href="cart.php" class="btn btn-danger w-100">
+                                    <i class="fas fa-bolt"></i> Proceed to Buy
+                                  </a>';
+                        }
+                        ?>
                     </div>
                     <div class="col-md-4 mb-2">
                         <?php
                         if (!isset($_SESSION['user_id'])) {
-                            echo '<button type="button" disabled class="btn btn-warning w-100">
-                                    <i class="fas fa-cart-plus"></i> Login to Add to Cart
-                                  </button>';
+                            echo '<a href="auth/login.php" class="btn btn-warning w-100">
+                                    <i class="fas fa-cart-plus"></i> Add to Cart
+                                  </a>';
                         } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
                             echo '<button type="button" disabled class="btn btn-success w-100">
                                     <i class="fas fa-shopping-cart"></i> In Cart
@@ -97,9 +105,9 @@
                     <div class="col-md-4 mb-2">
                         <?php
                         if (!isset($_SESSION['user_id'])) {
-                            echo '<button type="button" disabled class="btn btn-info w-100">
-                                    <i class="far fa-heart"></i> Login to Add to Wishlist
-                                  </button>';
+                            echo '<a href="auth/login.php" class="btn btn-info w-100">
+                                    <i class="far fa-heart"></i> Add to Wishlist
+                                  </a>';
                         } else if (in_array($item['item_id'], $Wishlist->getWishlistId($product->getData('wishlist')) ?? [])){
                             echo '<button type="button" disabled class="btn btn-success w-100">
                                     <i class="fas fa-heart"></i> In Wishlist

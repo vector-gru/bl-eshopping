@@ -49,7 +49,7 @@
                         </div>
                         <?php
                             if (!isset($_SESSION['user_id'])) {
-                                echo '<button type="button" disabled class="btn btn-warning font-size-12">Login to Add to Cart</button>';
+                                echo '<a href="auth/login.php" class="btn btn-warning font-size-12">Add to Cart</a>';
                             } else if (in_array($item['item_id'], $Cart->getCartId($product->getData('cart')) ?? [])){
                                 echo '<button type="button" disabled class="btn btn-success font-size-12">In the Cart</button>';
                             } else {
