@@ -1,5 +1,9 @@
 <?php
-session_start();
+// session_start() is now handled in header.php
+// Start session first, before any other logic
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Unset all session variables
 $_SESSION = array();

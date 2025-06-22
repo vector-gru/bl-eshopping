@@ -1,9 +1,12 @@
 <?php
+// Start session first, before any other logic
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once '../database/db_connect.php';
-session_start();
 
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
@@ -39,7 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             try {
                 $stmt->execute([$username, $email, $hashed_password, $phone_number, $first_name, $last_name]);
-                $success = "Account created successfully! You can now login.";
+                
+                // Redirect to login page with success message
+                header("Location: login.php?success=account_created");
+                exit();
             } catch(PDOException $e) {
                 $error = "Error creating account: " . $e->getMessage();
             }
@@ -59,39 +65,122 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .auth-container {
             max-width: 500px;
             margin: 50px auto;
-            padding: 20px;
+            padding: 30px;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid #e0e0e0;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-header h2 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .auth-header p {
+            color: #666;
+            font-size: 14px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
         }
         .form-group input {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
         .error {
             color: #dc3545;
-            margin-bottom: 15px;
-        }
-        .success {
-            color: #28a745;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            font-size: 14px;
         }
         .auth-links {
-            margin-top: 15px;
+            margin-top: 25px;
             text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .auth-links a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .btn-signup:hover {
+            background: linear-gradient(135deg, #1e7e34, #155724);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+        .btn-signup:active {
+            transform: translateY(0);
+        }
+        .form-icon {
+            position: relative;
+        }
+        .form-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .form-icon input {
+            padding-left: 45px;
         }
         .required:after {
             content: " *";
             color: #dc3545;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
         }
     </style>
 </head>
@@ -99,53 +188,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php include '../header.php'; ?>
 
     <div class="auth-container">
-        <h2>Create an Account</h2>
+        <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join us and start shopping today</p>
+        </div>
         
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div class="success"><?php echo $success; ?></div>
-        <?php endif; ?>
 
         <form method="POST" action="">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <div class="form-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter first name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <div class="form-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter last name">
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="username" class="required">Username</label>
-                <input type="text" id="username" name="username" required>
+                <div class="form-icon">
+                    <i class="fas fa-at"></i>
+                    <input type="text" id="username" name="username" required placeholder="Choose a username">
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="email" class="required">Email</label>
-                <input type="email" id="email" name="email" required>
+                <div class="form-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="phone_number" class="required">Phone Number</label>
-                <input type="tel" id="phone_number" name="phone_number" placeholder="e.g., +237 678 50 95 20" required>
-            </div>
-
-            <div class="form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" id="first_name" name="first_name">
-            </div>
-
-            <div class="form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" id="last_name" name="last_name">
+                <div class="form-icon">
+                    <i class="fas fa-phone"></i>
+                    <input type="tel" id="phone_number" name="phone_number" placeholder="e.g., +237 678 50 95 20" required>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="password" class="required">Password</label>
-                <input type="password" id="password" name="password" required>
+                <div class="form-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" required placeholder="Create a password">
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="confirm_password" class="required">Confirm Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
+                <div class="form-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                </div>
             </div>
 
-            <button type="submit" class="btn">Sign Up</button>
+            <button type="submit" class="btn-signup">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
         </form>
 
         <div class="auth-links">

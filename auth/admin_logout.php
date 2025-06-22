@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start() is now handled in header.php
 
 // Unset admin-specific session variables
 unset($_SESSION['admin_id']);

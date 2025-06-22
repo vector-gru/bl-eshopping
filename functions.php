@@ -1,23 +1,24 @@
 <?php
 
-
     use database\DBController;
     use database\Product;
     use database\Cart;
     use database\Wishlist;
 
+    // Get the correct path for includes
+    $base_dir = dirname(__FILE__);
 
     // require MySQL Connection
-    require ('database/DBController.php');
+    require ($base_dir . '/database/DBController.php');
 
     //require Product Class
-    require ('database/Product.php');
+    require ($base_dir . '/database/Product.php');
 
     //require Cart Class
-    require ('database/Cart.php');
+    require ($base_dir . '/database/Cart.php');
 
     //require Wishlist Class
-    require ('database/Wishlist.php');
+    require ($base_dir . '/database/Wishlist.php');
 
     // DBController object
     $db = new DBController();
@@ -25,7 +26,6 @@
     // Product object
     $product = new Product($db);
     $product_shuffle = $product->getData();
-
 
     //Cart object
     $Cart = new Cart($db);

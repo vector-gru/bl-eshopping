@@ -1,9 +1,23 @@
 <?php
+    // Check if session is already started before starting it - MUST be first
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
     // Enable error reporting
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 
-    session_start();
+    // Function to get the correct base path
+    function getBasePath() {
+        $current_dir = dirname($_SERVER['SCRIPT_NAME']);
+        if (strpos($current_dir, '/auth') !== false) {
+            return '../';
+        }
+        return './';
+    }
+    
+    $base_path = getBasePath();
 
     // Debug information
     if (isset($_SESSION['user_id'])) {
@@ -49,15 +63,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     
     <!-- Custom CSS file -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>style.css">
 
     <!-- Custom JS file -->
-    <script src="assets/js/cart.js"></script>
-    <script src="assets/js/banner.js"></script>
+    <script src="<?php echo $base_path; ?>assets/js/cart.js"></script>
+    <script src="<?php echo $base_path; ?>assets/js/banner.js"></script>
 
     <?php
         // require functions.php file
-        require ('functions.php');
+        require ($base_path . 'functions.php');
     ?>
 
 </head>
@@ -71,23 +85,23 @@
             <?php if (isset($_SESSION['user_id'])): ?>
                 <span class="px-3 border-right text-dark">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
                 <?php if (isAdmin()): ?>
-                    <a href="admin/" class="px-3 border-right text-dark"><i class="fas fa-cog"></i> Admin Panel</a>
+                    <a href="<?php echo $base_path; ?>admin/" class="px-3 border-right text-dark"><i class="fas fa-cog"></i> Admin Panel</a>
                 <?php endif; ?>
-                <a href="auth/logout.php" class="px-3 border-right text-dark">Logout</a>
+                <a href="<?php echo $base_path; ?>auth/logout.php" class="px-3 border-right text-dark">Logout</a>
             <?php else: ?>
-                <a href="auth/login.php" class="px-3 border-right text-dark">Login</a>
-                <a href="auth/signup.php" class="px-3 border-right text-dark">Sign Up</a>
+                <a href="<?php echo $base_path; ?>auth/login.php" class="px-3 border-right text-dark">Login</a>
+                <a href="<?php echo $base_path; ?>auth/signup.php" class="px-3 border-right text-dark">Sign Up</a>
             <?php endif; ?>
-            <a href="cart.php" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>
+            <a href="<?php echo $base_path; ?>cart.php" class="px-3 border-right text-dark">Wishlist (<span class="wishlist-count"><?php echo count($product->getData('wishlist'))?></span>)</a>
         </div>
     </div>
 
     <!-- Primary Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark color-second-bg">
-        <a href="index.php">
-            <img src="assets/blLogo3.png" style="width: 50px;" alt="logo">
+        <a href="<?php echo $base_path; ?>index.php">
+            <img src="<?php echo $base_path; ?>assets/blLogo3.png" style="width: 50px;" alt="logo">
         </a>
-        <a class="navbar-brand" href="index.php">B&L e-Shopping</a>
+        <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">B&L e-Shopping</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -113,7 +127,7 @@
                 </li>
             </ul>
             <form action="#" class="font-size-14 font-rale">
-                <a href="cart.php" class="py-2 rounded-pill color-primary-bg">
+                <a href="<?php echo $base_path; ?>cart.php" class="py-2 rounded-pill color-primary-bg">
                     <span class="font-size-16 px-2 text-white"><i class="fas fa-shopping-cart"></i></span>
                     <span class="px-3 py-2 rounded-pill text-dark bg-light cart-count"><?php echo count($product->getData('cart'))?></span>
                 </a>
