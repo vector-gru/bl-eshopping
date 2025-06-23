@@ -101,7 +101,7 @@
         <a href="<?php echo $base_path; ?>index.php">
             <img src="<?php echo $base_path; ?>assets/blLogo3.png" style="width: 50px;" alt="logo">
         </a>
-        <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">e-Smart Shop </a>
+        <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">BLe-Smart Shop </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
