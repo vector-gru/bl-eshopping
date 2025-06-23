@@ -2,9 +2,9 @@
 // Database configuration as constants
 define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '3306');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'eshop');
+define('DB_USER', 'u240131984_root');
+define('DB_PASS', 'Dev@hintekk1');
+define('DB_NAME', 'u240131984_eshop');
 
 function getDBConnection() {
     try {

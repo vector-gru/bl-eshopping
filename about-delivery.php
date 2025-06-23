@@ -13,7 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us & Delivery Information - B&L e-Shopping</title>
+    <title>About Us & Delivery Information - BLe-Smart  </title>
 
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -119,10 +119,10 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 mx-auto text-center">
-                        <h1 class="section-title">About B&L e-Shopping</h1>
+                        <h1 class="section-title">About BLe-Smart  </h1>
                         <div class="about-content">
                             <p class="lead mb-4">
-                                Welcome to B&L e-Shopping, your premier online shopping destination in Bafoussam, Cameroon. 
+                                Welcome to BLe-Smart  , your premier online shopping destination in Bafoussam, Cameroon. 
                                 We are passionate about bringing quality products and exceptional service to our community.
                             </p>
                             
@@ -168,7 +168,7 @@
                             </div>
 
                             <div class="mt-5">
-                                <h3>Why Choose B&L e-Shopping?</h3>
+                                <h3>Why Choose BLe-Smart  ?</h3>
                                 <div class="row mt-4">
                                     <div class="col-md-6">
                                         <ul class="list-unstyled">
@@ -193,7 +193,7 @@
                                 <h3>Contact Information</h3>
                                 <p class="mb-2"><i class="fas fa-map-marker-alt theme-icon me-2"></i><strong>Address:</strong> Bafoussam, West Region, Cameroon</p>
                                 <p class="mb-2"><i class="fas fa-phone theme-icon me-2"></i><strong>Phone:</strong> (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
-                                <p class="mb-2"><i class="fas fa-envelope theme-icon me-2"></i><strong>Email:</strong> info@bleshopping.com</p>
+                                <p class="mb-2"><i class="fas fa-envelope theme-icon me-2"></i><strong>Email:</strong> info@blesmart.com</p>
                                 <p class="mb-2"><i class="fas fa-clock theme-icon me-2"></i><strong>Business Hours:</strong> Monday - Saturday: 8:00 AM - 8:00 PM</p>
                             </div>
                         </div>

@@ -13,7 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy & Terms - B&L e-Shopping</title>
+    <title>Privacy Policy & Terms - BLe-Smart  </title>
 
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -136,7 +136,7 @@
                         <div class="policy-content">
                             <div class="policy-card">
                                 <h4><i class="fas fa-info-circle theme-icon me-2"></i>1. Information We Collect</h4>
-                                <p>At B&L e-Shopping, we collect information you provide directly to us, such as when you create an account, place an order, or contact us for support. This may include:</p>
+                                <p>At BLe-Smart  , we collect information you provide directly to us, such as when you create an account, place an order, or contact us for support. This may include:</p>
                                 <ul>
                                     <li><strong>Personal Information:</strong> Name, email address, phone number, and shipping address</li>
                                     <li><strong>Account Information:</strong> Username, password, and account preferences</li>
@@ -251,7 +251,7 @@
                         <div class="policy-content">
                             <div class="policy-card">
                                 <h4><i class="fas fa-handshake theme-icon me-2"></i>1. Acceptance of Terms</h4>
-                                <p>By accessing and using B&L e-Shopping's website and services, you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.</p>
+                                <p>By accessing and using BLe-Smart  's website and services, you accept and agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.</p>
                             </div>
 
                             <div class="policy-card">
@@ -311,7 +311,7 @@
 
                             <div class="policy-card">
                                 <h4><i class="fas fa-gavel theme-icon me-2"></i>8. Intellectual Property</h4>
-                                <p>All content on our website, including text, graphics, logos, and software, is the property of B&L e-Shopping or its licensors and is protected by copyright and other intellectual property laws.</p>
+                                <p>All content on our website, including text, graphics, logos, and software, is the property of BLe-Smart   or its licensors and is protected by copyright and other intellectual property laws.</p>
                                 <p>You may not reproduce, distribute, or create derivative works without our express written consent.</p>
                             </div>
 

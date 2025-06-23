@@ -41,7 +41,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B&L e-Shopping</title>
+    <title>e-Smart Shop </title>
 
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -101,7 +101,7 @@
         <a href="<?php echo $base_path; ?>index.php">
             <img src="<?php echo $base_path; ?>assets/blLogo3.png" style="width: 50px;" alt="logo">
         </a>
-        <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">B&L e-Shopping</a>
+        <a class="navbar-brand" href="<?php echo $base_path; ?>index.php">e-Smart Shop </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
