@@ -81,9 +81,9 @@
                                     <i class="fas fa-bolt"></i> Proceed to Buy
                                   </a>';
                         } else {
-                            echo '<a href="cart.php" class="btn btn-danger w-100">
+                            echo '<button type="button" class="btn btn-danger w-100" onclick="proceedToBuy('.$item['item_id'].', '.$_SESSION['user_id'].')">
                                     <i class="fas fa-bolt"></i> Proceed to Buy
-                                  </a>';
+                                  </button>';
                         }
                         ?>
                     </div>
@@ -282,6 +282,317 @@ document.addEventListener('DOMContentLoaded', function() {
         firstThumbnail.classList.add('border-primary');
     }
 });
+
+// Function to proceed to buy - adds to cart first, then shows modal if cart was empty
+function proceedToBuy(itemId, userId) {
+    // First check current cart count
+    const cartCountElement = document.querySelector('.cart-count');
+    const currentCartCount = cartCountElement ? parseInt(cartCountElement.textContent) || 0 : 0;
+    
+    console.log('Current cart count:', currentCartCount);
+    
+    // Create form data for adding to cart
+    const formData = new FormData();
+    formData.append('item_id', itemId);
+    formData.append('user_id', userId);
+
+    // Send AJAX request to add to cart
+    fetch('Template/ajax-cart.php', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Cart response:', data);
+        
+        if (data.success) {
+            // Update cart count
+            if (cartCountElement) {
+                cartCountElement.textContent = currentCartCount + 1;
+            }
+            
+            // If cart was empty before adding this item, show confirmation modal
+            if (currentCartCount === 0) {
+                console.log('Cart was empty, showing confirmation modal');
+                // Wait a moment for the cart to be updated, then show modal
+                setTimeout(() => {
+                    showCartOrderModal();
+                }, 500);
+            } else {
+                console.log('Cart had items, redirecting to cart page');
+                // Redirect to cart page
+                window.location.href = 'cart.php';
+            }
+        } else {
+            // If failed, show error message
+            let errorMessage = data.message || 'Failed to add item to cart.';
+            alert(errorMessage);
+        }
+    })
+    .catch(error => {
+        console.error('Cart error:', error);
+        alert('An error occurred while adding to cart: ' + error.message);
+    });
+}
+
+// Function to show cart order modal (reuses existing cart modal functionality)
+function showCartOrderModal() {
+    console.log('Showing cart order modal...');
+    
+    // First update the modal data, then show the modal
+    updateOrderModal();
+    
+    // Wait a moment for the data to be fetched, then show modal
+    setTimeout(() => {
+        const modal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+        modal.show();
+    }, 300);
+}
+</script>
+
+<!-- Order Confirmation Modal (same as cart template) -->
+<div class="modal fade" id="orderConfirmationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Your Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Order Summary</h6>
+                        <div id="order-items-summary"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Order Details</h6>
+                                <div id="order-details-summary"></div>
+                                <hr>
+                                <div class="d-grid gap-2">
+                                    <form method="POST" action="process_order.php" id="confirm-order-form">
+                                        <button type="submit" class="btn btn-success" id="confirm-order-btn">
+                                            <i class="fas fa-check me-2"></i>Confirm Order
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle order form submission for product page (same as cart template)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('confirm-order-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('confirm-order-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            submitBtn.disabled = true;
+            
+            // Submit form via AJAX
+            fetch('process_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new FormData(this)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.text(); // Get raw text first
+            })
+            .then(text => {
+                console.log('Raw response:', text);
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Raw text that failed to parse:', text);
+                    throw new Error('Invalid JSON response from server');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close modal immediately using simple DOM manipulation
+                    const modalElement = document.getElementById('orderConfirmationModal');
+                    if (modalElement) {
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    }
+                    
+                    // Show success message
+                    alert('Order confirmed! Redirecting to WhatsApp...');
+                    
+                    // Open WhatsApp immediately
+                    window.open(data.whatsapp_url, '_blank');
+                    
+                    // Redirect to home page
+                    window.location.href = 'index.php';
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error processing order: ' + error.message);
+                
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+    
+    // Handle order confirmation modal
+    const modal = document.getElementById('orderConfirmationModal');
+    if (modal) {
+        modal.addEventListener('show.bs.modal', function () {
+            // Update modal with current cart data
+            updateOrderModal();
+        });
+        
+        // Also handle when modal is shown programmatically
+        modal.addEventListener('shown.bs.modal', function () {
+            // Update modal with current cart data after modal is fully shown
+            updateOrderModal();
+        });
+    }
+});
+
+// Global function to update order modal with current cart data (same as cart template)
+function updateOrderModal(retryCount = 0) {
+    console.log('Updating order modal with cart data... (attempt ' + (retryCount + 1) + ')');
+    
+    fetch('Template/get-cart-data.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Cart data received:', data);
+            
+            if (data.success) {
+                const cartItems = data.cart_items;
+                let itemsHtml = '';
+                let totalAmount = 0;
+                let itemCount = 0;
+                let currency = 'XAF';
+                
+                if (cartItems && cartItems.length > 0) {
+                    cartItems.forEach(cartItem => {
+                        const itemTotal = parseFloat(cartItem.item_price) * parseInt(cartItem.quantity);
+                        totalAmount += itemTotal;
+                        itemCount += parseInt(cartItem.quantity);
+                        currency = cartItem.currency || 'XAF';
+                        
+                        itemsHtml += `
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                <div>
+                                    <strong>${cartItem.item_name || 'Unknown Product'}</strong><br>
+                                    <small class="text-muted">Qty: ${cartItem.quantity}</small>
+                                </div>
+                                <div class="text-end">
+                                    <strong>${currency} ${itemTotal.toFixed(2)}</strong><br>
+                                    <small class="text-muted">${currency} ${parseFloat(cartItem.item_price).toFixed(2)} each</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    // If no items and this is the first attempt, retry once
+                    if (retryCount === 0) {
+                        console.log('No cart items found, retrying in 1 second...');
+                        setTimeout(() => {
+                            updateOrderModal(1);
+                        }, 1000);
+                        return;
+                    }
+                    itemsHtml = '<div class="text-muted">No items in cart</div>';
+                }
+                
+                // Update modal content
+                const orderItemsSummary = document.getElementById('order-items-summary');
+                const orderDetailsSummary = document.getElementById('order-details-summary');
+                
+                if (orderItemsSummary) {
+                    orderItemsSummary.innerHTML = itemsHtml;
+                }
+                
+                if (orderDetailsSummary) {
+                    if (cartItems && cartItems.length > 0) {
+                        orderDetailsSummary.innerHTML = `
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Items (${itemCount}):</span>
+                                <span>${currency} ${totalAmount.toFixed(2)}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Delivery:</span>
+                                <span class="text-success">FREE</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total:</span>
+                                <span>${currency} ${totalAmount.toFixed(2)}</span>
+                            </div>
+                        `;
+                    } else {
+                        orderDetailsSummary.innerHTML = `
+                            <div class="text-muted">No items to display</div>
+                        `;
+                    }
+                }
+            } else {
+                console.error('Failed to fetch cart data:', data.message);
+                // Show error message in modal
+                const orderItemsSummary = document.getElementById('order-items-summary');
+                const orderDetailsSummary = document.getElementById('order-details-summary');
+                
+                if (orderItemsSummary) {
+                    orderItemsSummary.innerHTML = '<div class="text-danger">Error loading cart data</div>';
+                }
+                if (orderDetailsSummary) {
+                    orderDetailsSummary.innerHTML = '<div class="text-danger">Please try again</div>';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching cart data:', error);
+            // Show error message in modal
+            const orderItemsSummary = document.getElementById('order-items-summary');
+            const orderDetailsSummary = document.getElementById('order-details-summary');
+            
+            if (orderItemsSummary) {
+                orderItemsSummary.innerHTML = '<div class="text-danger">Error loading cart data</div>';
+            }
+            if (orderDetailsSummary) {
+                orderDetailsSummary.innerHTML = '<div class="text-danger">Please try again</div>';
+            }
+        });
+}
 </script>
 
 <!--   !product  -->

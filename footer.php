@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-lg-3 col-12">
                 <h4 class="font-rubik font-size-20">B&L e-Shopping</h4>
-                <p class="font-size-14 font-rale text-white-50">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repellendus, deserunt.</p>
+                <p class="font-size-14 font-rale text-white-50">Bafoussam, (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
             </div>
             <div class="col-lg-4 col-12">
                 <h4 class="font-rubik font-size-20">Newslatter</h4>
@@ -32,9 +32,9 @@
             <div class="col-lg-2 col-12">
                 <h4 class="font-rubik font-size-20">Account</h4>
                 <div class="d-flex flex-column flex-wrap">
-                    <a href="#" class="font-rale font-size-14 text-white-50 pb-1">My Account</a>
-                    <a href="#" class="font-rale font-size-14 text-white-50 pb-1">Order History</a>
-                    <a href="#" class="font-rale font-size-14 text-white-50 pb-1">Wish List</a>
+                    <a href="<?php echo $base_path; ?>auth/login.php" class="font-rale font-size-14 text-white-50 pb-1">My Account</a>
+                    <a href="<?php echo $base_path; ?>auth/login.php" class="font-rale font-size-14 text-white-50 pb-1">Order History</a>
+                    <a href="<?php echo $base_path; ?>cart.php" class="font-rale font-size-14 text-white-50 pb-1">Wish List</a>
                     <a href="#" class="font-rale font-size-14 text-white-50 pb-1">Newslatters</a>
                 </div>
             </div>
@@ -42,7 +42,7 @@
     </div>
 </footer>
 <div class="copyright text-center bg-dark text-white py-2">
-    <p class="font-rale font-size-14">&copy; Copyrights 2024. Desing By <a href="#" class="color-second">B&L Technologies</a></p>
+    <p class="font-rale font-size-14">&copy; Copyrights 2025. Desing By <a href="#" class="color-second">B&L Technologies</a></p>
 </div>
 <!-- !start #footer -->
 

@@ -80,7 +80,7 @@
 <!-- start #header -->
 <header id="header">
     <div class="strip d-flex justify-content-between px-4 py-1 bg-light">
-        <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam TPO, Foumbot Road (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
+        <p class="font-rale font-size-12 text-black-50 m-0">Bafoussam, (+237) 678 50 95 20 / 650 15 41 83 / 683 70 41 82</p>
         <div class="font-rale font-size-14">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <span class="px-3 border-right text-dark">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
@@ -107,23 +107,23 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav m-auto font-rubik">
-                <li class="nav-item active">
+                <!-- <li class="nav-item active">
                     <a class="nav-link" href="#">On Sale</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Category</a>
+                </li> -->
+                <li class="nav-item active">
+                    <a class="nav-link" href="<?php echo $base_path; ?>index.php">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Products <i class="fas fa-chevron-down"></i></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Blog</a>
-                </li>
+                </li>                
                 <li class="nav-item">
                     <a class="nav-link" href="#">Category <i class="fas fa-chevron-down"></i></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Coming Soon</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Blog</a>
                 </li>
             </ul>
             <form action="#" class="font-size-14 font-rale">
