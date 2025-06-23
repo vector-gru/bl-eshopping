@@ -6,9 +6,9 @@
 {
     //Database Connection Properties
     protected $host = 'localhost';
-    protected $user = 'root';
-    protected $password = '';
-    protected $database = 'eshop';
+    protected $user = 'u240131984_root';
+    protected $password = 'Dev@hintekk1';
+    protected $database = 'u240131984_eshop';
 
     // connection property
         public $con = null;

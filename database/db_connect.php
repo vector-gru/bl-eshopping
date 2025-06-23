@@ -1,6 +1,6 @@
 <?php
 // Database configuration as constants
-define('DB_HOST', '127.0.0.1');
+define('DB_HOST', 'localhost');
 define('DB_PORT', '3306');
 define('DB_USER', 'u240131984_root');
 define('DB_PASS', 'Dev@hintekk1');
